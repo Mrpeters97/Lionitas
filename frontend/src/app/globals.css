@@ -1,0 +1,169 @@
+@import "tailwindcss";
+
+/*
+  Lionitas design tokens — bron van waarheid voor het hele project.
+  Afgeleid van Figma "Home" (bestand mLH5E83qKoNcPvQXoueMOl, node 39:181).
+  Zie CLAUDE.md voor de rol-uitleg per token.
+
+  Laag 1 = primitieven (ruwe merkwaarden).
+  Laag 2 = semantische aliassen die naar laag 1 verwijzen — gebruik in de UI bij
+  voorkeur de semantische tokens (bg-surface-dark, text-heading, …) zodat een
+  herkleuring op één plek gebeurt.
+*/
+@theme {
+  --font-sans: var(--font-general-sans);
+
+  /* ---- Laag 1: primitieve kleuren ---- */
+  --color-navy: #000e35;
+  --color-navy-hover: #263253;
+  --color-blue: #0a71b4;
+  --color-blue-hover: #096099;
+  --color-yellow: #ffed00;
+  --color-yellow-hover: #d9c900;
+  --color-cream: #faf0e0;
+  --color-ink: #101010;
+  --color-page: #f6f6f6;
+
+  /* ---- Laag 2: semantische kleuren ---- */
+  --color-background: var(--color-page); /* basis pagina-achtergrond (= body) */
+  --color-foreground: var(--color-ink); /* body-tekst op lichte achtergrond */
+  --color-surface: #ffffff; /* verhoogd kaart/paneel op licht (Actueel-tekstpaneel, FAQ-kaart) */
+  --color-surface-dark: var(--color-navy); /* hero, header, footer */
+  --color-surface-brand: var(--color-blue); /* "Atletiek en hardlopen"-sectie, blauwe pills */
+  --color-surface-soft: var(--color-cream); /* cream secties (Trainingen → Actueel) */
+  --color-accent: var(--color-yellow); /* primaire knoppen, pijl-glyph */
+  --color-heading: var(--color-navy); /* koppen op lichte achtergrond */
+  --color-on-dark: #ffffff; /* tekst op donkere surfaces */
+  --color-on-dark-muted: rgba(255, 255, 255, 0.75); /* gedimde tekst op donker */
+  --color-on-light-muted: rgba(16, 16, 16, 0.65); /* gedimde tekst op licht */
+
+  /* ---- Type-scale (responsief via clamp: mobiel → desktop) ---- */
+  --text-display: clamp(2.25rem, 4vw + 1rem, 3.25rem); /* 36 → 52 */
+  --text-display--line-height: 1;
+  --text-display--font-weight: 700;
+
+  --text-h1: clamp(2.5rem, 5vw + 1rem, 4.25rem); /* 40 → 68 */
+  --text-h1--line-height: 1;
+  --text-h1--font-weight: 700;
+
+  --text-h2: clamp(1.875rem, 3.5vw + 1rem, 3rem); /* 30 → 48 */
+  --text-h2--line-height: 1.05;
+  --text-h2--font-weight: 700;
+
+  --text-h3: clamp(1.625rem, 2vw + 1rem, 2.25rem); /* 26 → 36 */
+  --text-h3--line-height: 1.1;
+  --text-h3--font-weight: 700;
+
+  --text-h4: clamp(1.25rem, 1vw + 1rem, 1.625rem); /* 20 → 26 */
+  --text-h4--line-height: 1.15;
+  --text-h4--font-weight: 700;
+
+  --text-card: clamp(1.375rem, 1vw + 1rem, 1.75rem); /* 22 → 28 — Bold, roman, sentence case */
+  --text-card--line-height: 1.05;
+  --text-card--font-weight: 700;
+
+  --text-faq: clamp(1.125rem, 0.5vw + 1rem, 1.375rem); /* 18 → 22 */
+  --text-faq--line-height: 1.4;
+  --text-faq--font-weight: 600;
+
+  --text-eyebrow: 1.125rem; /* 18 */
+  --text-eyebrow--line-height: 1.5;
+  --text-eyebrow--font-weight: 700;
+
+  --text-body: 1.0625rem; /* 17 */
+  --text-body--line-height: 1.6;
+
+  --text-label: 1.0625rem; /* 17 — knoppen / labels, gelijk aan text-body */
+  --text-label--line-height: 1.333;
+  --text-label--font-weight: 600;
+
+  --text-meta: 0.875rem; /* 14 — meta-pills / tags */
+  --text-meta--line-height: 1.5;
+  --text-meta--font-weight: 500;
+
+  /* ---- Radius ---- */
+  --radius-pill: 999px;
+  --radius-panel: 20px; /* FAQ-kaarten, "Baan/Weg/Loopgroepen"-kaarten */
+  --radius-card: 30px; /* Actueel-kaarten */
+  --radius-media: 32px; /* contentblok-afbeeldingen, marquee-tegels */
+  --radius-section: 50px; /* sectie-onderhoeken */
+
+  /* ---- Container ---- */
+  --container-page: 1520px;
+
+  /* ---- Verticaal ritme (zie Section.tsx) ---- */
+  --spacing-section: clamp(4.5rem, 8vw, 8rem); /* 72 → 128 — standaard ruimte tussen blokken */
+  /* "bleed" = hoeveel content bewust uit de onderrand van een sectie steekt. Gebruik
+     hetzelfde token als `-mb-…` op de uitstekende content én als `connectExtra` op de
+     volgende <Section connect>; de zichtbare gap blijft dan exact --spacing-section. */
+  --spacing-bleed: 15rem; /* 240 — Actueel-kaarten */
+  --spacing-bleed-cards: 8rem; /* 128 — intro-kaarten die op de cream-sectie vallen */
+}
+
+/*
+  Gedeelde kop-classes — dezelfde koppen door de hele site door te voeren.
+  Kleur is default die voor een lichte achtergrond; op een donkere sectie voeg
+  je in de markup `text-on-dark` toe.
+*/
+@layer components {
+  .display {
+    @apply font-bold italic uppercase text-display text-heading;
+  }
+  .h1 {
+    @apply font-bold italic uppercase text-h1 text-heading;
+  }
+  .h2 {
+    @apply font-bold italic uppercase text-h2 text-heading;
+  }
+  .h3 {
+    @apply font-bold italic uppercase text-h3 text-heading;
+  }
+  .h4 {
+    @apply font-bold italic uppercase text-h4 text-heading;
+  }
+  .eyebrow {
+    @apply font-bold italic uppercase text-eyebrow text-accent;
+  }
+}
+
+body {
+  background: var(--color-background);
+  color: var(--color-foreground);
+}
+
+/* Lenis smooth scroll */
+html.lenis,
+html.lenis body {
+  height: auto;
+}
+
+.lenis.lenis-smooth {
+  scroll-behavior: auto;
+}
+
+.lenis.lenis-stopped {
+  overflow: hidden;
+}
+
+/* Doorlopende fotogalerij (ImageMarquee) — schuift van rechts naar links */
+@keyframes marquee {
+  from {
+    transform: translateX(0);
+  }
+  to {
+    transform: translateX(-50%);
+  }
+}
+
+.animate-marquee {
+  animation: marquee 50s linear infinite;
+}
+
+/* Horizontale sliders (CardSlider, mobiel) — scrollbar verbergen, swipe blijft werken */
+.no-scrollbar {
+  -ms-overflow-style: none;
+  scrollbar-width: none;
+}
+.no-scrollbar::-webkit-scrollbar {
+  display: none;
+}

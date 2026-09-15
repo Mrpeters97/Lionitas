@@ -1,0 +1,123 @@
+"use client";
+
+import Image from "next/image";
+import Link from "next/link";
+import { motion } from "framer-motion";
+import type { WordPressPost } from "@/lib/wordpress";
+import { ArrowIcon } from "@/components/PillLink";
+import CardSlider from "@/components/CardSlider";
+import { useTouchLayout } from "@/lib/useTouchLayout";
+
+function formatDate(date: string) {
+  return new Date(date).toLocaleDateString("nl-NL", { day: "numeric", month: "long", year: "numeric" });
+}
+
+const spring = { type: "spring" as const, stiffness: 150, damping: 24 };
+
+const imageVariants = {
+  rest: { scale: 1 },
+  hover: { scale: 1.06 },
+};
+
+// Blur lives on its own full-card layer that only fades in (no transform), so its blur
+// radius stays exactly `blur-md` throughout — scaling a blurred element scales the blur
+// radius too, which is what washed the image out completely in an earlier version.
+const blurVariants = {
+  rest: { opacity: 0 },
+  hover: { opacity: 1 },
+};
+
+// The color wash still blooms from the corner badge via transform: scale, same as the
+// original design — this part never had a blur on it, so scaling it is fine.
+const floodVariants = {
+  rest: { scale: 1 },
+  hover: { scale: 30 },
+};
+
+const excerptVariants = {
+  rest: { height: 0, opacity: 0, marginTop: 0 },
+  hover: { height: "auto", opacity: 1, marginTop: 8 },
+};
+
+const MotionLink = motion.create(Link);
+
+function ActueelCard({ post }: { post: WordPressPost }) {
+  const category = post.categories.nodes[0]?.name;
+  const touchLayout = useTouchLayout();
+
+  return (
+    <MotionLink
+      href={`/actueel/${post.slug}`}
+      initial="rest"
+      animate="rest"
+      whileHover={touchLayout ? undefined : "hover"}
+      whileFocus={touchLayout ? undefined : "hover"}
+      className="group relative block h-[420px] overflow-hidden rounded-card bg-navy/20 focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-yellow sm:h-[480px]"
+    >
+      {post.featuredImage?.node && (
+        <motion.div variants={imageVariants} transition={spring} className="absolute inset-0">
+          <Image
+            src={post.featuredImage.node.sourceUrl}
+            alt={post.featuredImage.node.altText || post.title}
+            fill
+            className="object-cover"
+          />
+        </motion.div>
+      )}
+      <div className="absolute inset-0 bg-black/20" />
+
+      <motion.div
+        aria-hidden
+        variants={blurVariants}
+        transition={spring}
+        className="absolute inset-0 rounded-card backdrop-blur-md"
+      />
+
+      <motion.span
+        aria-hidden
+        variants={floodVariants}
+        transition={spring}
+        style={{ transformOrigin: "center" }}
+        className="absolute bottom-6 right-6 h-11 w-11 rounded-full bg-navy/80"
+      />
+
+      <div className="relative flex h-full flex-col justify-between p-6">
+        <div className="flex flex-wrap gap-3">
+          <span className="rounded-pill bg-white px-3 py-1 text-meta text-navy">
+            {formatDate(post.date)}
+          </span>
+          {category && (
+            <span className="rounded-pill bg-white px-3 py-1 text-meta text-navy">{category}</span>
+          )}
+        </div>
+        <div className="max-w-[85%]">
+          <h3 className="text-card text-on-dark">{post.title}</h3>
+          <motion.div variants={excerptVariants} transition={spring} className="overflow-hidden">
+            <div
+              className="mt-2 text-meta text-on-dark-muted line-clamp-3 [&_a]:underline"
+              dangerouslySetInnerHTML={{ __html: post.excerpt }}
+            />
+          </motion.div>
+        </div>
+      </div>
+
+      <span className="absolute bottom-6 right-6 flex h-11 w-11 items-center justify-center">
+        <ArrowIcon variant="yellow" showCircle={false} />
+      </span>
+    </MotionLink>
+  );
+}
+
+export default function ActueelSection({ posts }: { posts: WordPressPost[] }) {
+  const items = posts.slice(0, 3);
+
+  if (items.length === 0) return null;
+
+  return (
+    <CardSlider>
+      {items.map((post) => (
+        <ActueelCard key={post.id} post={post} />
+      ))}
+    </CardSlider>
+  );
+}

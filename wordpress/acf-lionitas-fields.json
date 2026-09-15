@@ -1,0 +1,623 @@
+[
+  {
+    "key": "group_lionitas_home",
+    "title": "Home Pagina Content",
+    "fields": [
+      {
+        "key": "field_tab_hero",
+        "label": "Hero",
+        "name": "",
+        "type": "tab",
+        "placement": "top"
+      },
+      {
+        "key": "field_hero_group",
+        "label": "Hero",
+        "name": "hero",
+        "type": "group",
+        "layout": "block",
+        "sub_fields": [
+          {
+            "key": "field_hero_heading",
+            "label": "Heading",
+            "name": "heading",
+            "type": "text",
+            "default_value": "Samen ga je sneller!"
+          },
+          {
+            "key": "field_hero_text",
+            "label": "Tekst",
+            "name": "text",
+            "type": "textarea",
+            "rows": 4,
+            "default_value": "Of je nu springt, werpt, sprint of loopt, 7 of 70 bent: bij Lionitas train je met trainers die je verder helpen, trainingsmaatjes die je uitdagen en een groep die je mist als je er niet bent. Samen ga je sneller, dat ervaar je hier elke training."
+          },
+          {
+            "key": "field_hero_background_image",
+            "label": "Achtergrondafbeelding",
+            "name": "background_image",
+            "type": "image",
+            "return_format": "array",
+            "preview_size": "large"
+          },
+          {
+            "key": "field_hero_primary_button_label",
+            "label": "Knop 1 - Tekst",
+            "name": "primary_button_label",
+            "type": "text",
+            "default_value": "Lid worden"
+          },
+          {
+            "key": "field_hero_primary_button_link",
+            "label": "Knop 1 - Link",
+            "name": "primary_button_link",
+            "type": "link",
+            "return_format": "array"
+          },
+          {
+            "key": "field_hero_secondary_button_label",
+            "label": "Knop 2 - Tekst",
+            "name": "secondary_button_label",
+            "type": "text",
+            "default_value": "Bekijk de trainingsgroepen"
+          },
+          {
+            "key": "field_hero_secondary_button_link",
+            "label": "Knop 2 - Link",
+            "name": "secondary_button_link",
+            "type": "link",
+            "return_format": "array"
+          }
+        ]
+      },
+      {
+        "key": "field_tab_intro",
+        "label": "Intro & Diensten",
+        "name": "",
+        "type": "tab",
+        "placement": "top"
+      },
+      {
+        "key": "field_intro_group",
+        "label": "Intro",
+        "name": "intro",
+        "type": "group",
+        "layout": "block",
+        "sub_fields": [
+          {
+            "key": "field_intro_eyebrow",
+            "label": "Eyebrow",
+            "name": "eyebrow",
+            "type": "text",
+            "default_value": "AV Lionitas"
+          },
+          {
+            "key": "field_intro_heading",
+            "label": "Heading",
+            "name": "heading",
+            "type": "text",
+            "default_value": "Atletiek en hardlopen voor alle leeftijden"
+          },
+          {
+            "key": "field_intro_text",
+            "label": "Tekst",
+            "name": "text",
+            "type": "textarea",
+            "rows": 4,
+            "default_value": "Of je nu springt, werpt, sprint of loopt, 7 of 70 bent: bij Lionitas train je met trainers die je verder helpen, trainingsmaatjes die je uitdagen en een groep die je mist als je er niet bent. Samen ga je sneller, dat ervaar je hier elke training."
+          }
+        ]
+      },
+      {
+        "key": "field_card1_group",
+        "label": "Kaart 1",
+        "name": "card_1",
+        "type": "group",
+        "layout": "block",
+        "sub_fields": [
+          {
+            "key": "field_card1_title",
+            "label": "Titel",
+            "name": "title",
+            "type": "text",
+            "default_value": "Baan atletiek"
+          },
+          {
+            "key": "field_card1_image",
+            "label": "Afbeelding",
+            "name": "image",
+            "type": "image",
+            "return_format": "array"
+          },
+          {
+            "key": "field_card1_link",
+            "label": "Link",
+            "name": "link",
+            "type": "link",
+            "return_format": "array"
+          }
+        ]
+      },
+      {
+        "key": "field_card2_group",
+        "label": "Kaart 2",
+        "name": "card_2",
+        "type": "group",
+        "layout": "block",
+        "sub_fields": [
+          {
+            "key": "field_card2_title",
+            "label": "Titel",
+            "name": "title",
+            "type": "text",
+            "default_value": "Weg atletiek"
+          },
+          {
+            "key": "field_card2_image",
+            "label": "Afbeelding",
+            "name": "image",
+            "type": "image",
+            "return_format": "array"
+          },
+          {
+            "key": "field_card2_link",
+            "label": "Link",
+            "name": "link",
+            "type": "link",
+            "return_format": "array"
+          }
+        ]
+      },
+      {
+        "key": "field_card3_group",
+        "label": "Kaart 3",
+        "name": "card_3",
+        "type": "group",
+        "layout": "block",
+        "sub_fields": [
+          {
+            "key": "field_card3_title",
+            "label": "Titel",
+            "name": "title",
+            "type": "text",
+            "default_value": "Loopgroepen"
+          },
+          {
+            "key": "field_card3_image",
+            "label": "Afbeelding",
+            "name": "image",
+            "type": "image",
+            "return_format": "array"
+          },
+          {
+            "key": "field_card3_link",
+            "label": "Link",
+            "name": "link",
+            "type": "link",
+            "return_format": "array"
+          }
+        ]
+      },
+      {
+        "key": "field_tab_block1",
+        "label": "Content blok: Trainingen",
+        "name": "",
+        "type": "tab",
+        "placement": "top"
+      },
+      {
+        "key": "field_cb1_group",
+        "label": "Content blok: Trainingen",
+        "name": "content_block_1",
+        "type": "group",
+        "layout": "block",
+        "sub_fields": [
+          {
+            "key": "field_cb1_heading",
+            "label": "Heading",
+            "name": "heading",
+            "type": "text",
+            "default_value": "Trainingen op maat voor iedereen"
+          },
+          {
+            "key": "field_cb1_text",
+            "label": "Tekst",
+            "name": "text",
+            "type": "textarea",
+            "rows": 4
+          },
+          {
+            "key": "field_cb1_button_label",
+            "label": "Knop - Tekst",
+            "name": "button_label",
+            "type": "text",
+            "default_value": "Bekijk de trainingsplekken"
+          },
+          {
+            "key": "field_cb1_button_link",
+            "label": "Knop - Link",
+            "name": "button_link",
+            "type": "link",
+            "return_format": "array"
+          },
+          {
+            "key": "field_cb1_image",
+            "label": "Afbeelding",
+            "name": "image",
+            "type": "image",
+            "return_format": "array"
+          },
+          {
+            "key": "field_cb1_image_position",
+            "label": "Afbeelding positie",
+            "name": "image_position",
+            "type": "select",
+            "choices": {
+              "links": "Links",
+              "rechts": "Rechts"
+            },
+            "default_value": "rechts",
+            "return_format": "value"
+          }
+        ]
+      },
+      {
+        "key": "field_tab_block2",
+        "label": "Content blok: Over Lionitas",
+        "name": "",
+        "type": "tab",
+        "placement": "top"
+      },
+      {
+        "key": "field_cb2_group",
+        "label": "Content blok: Over Lionitas",
+        "name": "content_block_2",
+        "type": "group",
+        "layout": "block",
+        "sub_fields": [
+          {
+            "key": "field_cb2_heading",
+            "label": "Heading",
+            "name": "heading",
+            "type": "text",
+            "default_value": "Betrouwbaar. Professioneel. Praktisch."
+          },
+          {
+            "key": "field_cb2_text",
+            "label": "Tekst",
+            "name": "text",
+            "type": "textarea",
+            "rows": 4,
+            "default_value": "Lionitas is een vereniging met een rijk verleden. De club is in 1962 ontstaan uit een fusie tussen twee andere atletiekverenigingen, namelijk Marathon en Vitesse. Sindsdien is Lionitas de enige atletiekvereniging in de stad Leeuwarden. In de loop der jaren is Lionitas uitgegroeid tot een grote en bloeiende vereniging met ruim 600 leden."
+          },
+          {
+            "key": "field_cb2_button_label",
+            "label": "Knop - Tekst",
+            "name": "button_label",
+            "type": "text",
+            "default_value": "Lees meer over ons"
+          },
+          {
+            "key": "field_cb2_button_link",
+            "label": "Knop - Link",
+            "name": "button_link",
+            "type": "link",
+            "return_format": "array"
+          },
+          {
+            "key": "field_cb2_image",
+            "label": "Afbeelding",
+            "name": "image",
+            "type": "image",
+            "return_format": "array"
+          },
+          {
+            "key": "field_cb2_image_position",
+            "label": "Afbeelding positie",
+            "name": "image_position",
+            "type": "select",
+            "choices": {
+              "links": "Links",
+              "rechts": "Rechts"
+            },
+            "default_value": "links",
+            "return_format": "value"
+          }
+        ]
+      },
+      {
+        "key": "field_tab_faq",
+        "label": "FAQ",
+        "name": "",
+        "type": "tab",
+        "placement": "top"
+      },
+      {
+        "key": "field_faq_group",
+        "label": "Veelgestelde vragen",
+        "name": "faq",
+        "type": "group",
+        "layout": "block",
+        "sub_fields": [
+          {
+            "key": "field_faq_heading",
+            "label": "Heading",
+            "name": "heading",
+            "type": "text",
+            "default_value": "Vragen die we vaak krijgen"
+          },
+          {
+            "key": "field_faq_q1",
+            "label": "Vraag 1",
+            "name": "item_1_question",
+            "type": "text",
+            "default_value": "Hoe kan ik me aanmelden?"
+          },
+          {
+            "key": "field_faq_a1",
+            "label": "Antwoord 1",
+            "name": "item_1_answer",
+            "type": "textarea",
+            "rows": 3
+          },
+          {
+            "key": "field_faq_q2",
+            "label": "Vraag 2",
+            "name": "item_2_question",
+            "type": "text",
+            "default_value": "Wat zijn de contributiekosten?"
+          },
+          {
+            "key": "field_faq_a2",
+            "label": "Antwoord 2",
+            "name": "item_2_answer",
+            "type": "textarea",
+            "rows": 3
+          },
+          {
+            "key": "field_faq_q3",
+            "label": "Vraag 3",
+            "name": "item_3_question",
+            "type": "text",
+            "default_value": "Hoeveel dagen in de week kan ik trainen?"
+          },
+          {
+            "key": "field_faq_a3",
+            "label": "Antwoord 3",
+            "name": "item_3_answer",
+            "type": "textarea",
+            "rows": 3
+          },
+          {
+            "key": "field_faq_q4",
+            "label": "Vraag 4",
+            "name": "item_4_question",
+            "type": "text",
+            "default_value": "Wat zijn de trainingstijden?"
+          },
+          {
+            "key": "field_faq_a4",
+            "label": "Antwoord 4",
+            "name": "item_4_answer",
+            "type": "textarea",
+            "rows": 3
+          },
+          {
+            "key": "field_faq_q5",
+            "label": "Vraag 5",
+            "name": "item_5_question",
+            "type": "text",
+            "default_value": "Kan ik me aanmelden als vrijwilliger?"
+          },
+          {
+            "key": "field_faq_a5",
+            "label": "Antwoord 5",
+            "name": "item_5_answer",
+            "type": "textarea",
+            "rows": 3
+          }
+        ]
+      },
+      {
+        "key": "field_tab_gallery",
+        "label": "Fotogalerij",
+        "name": "",
+        "type": "tab",
+        "placement": "top"
+      },
+      {
+        "key": "field_gallery_group",
+        "label": "Fotogalerij",
+        "name": "gallery",
+        "type": "group",
+        "layout": "block",
+        "sub_fields": [
+          {
+            "key": "field_gallery_image_1",
+            "label": "Foto 1",
+            "name": "image_1",
+            "type": "image",
+            "return_format": "array"
+          },
+          {
+            "key": "field_gallery_image_2",
+            "label": "Foto 2",
+            "name": "image_2",
+            "type": "image",
+            "return_format": "array"
+          },
+          {
+            "key": "field_gallery_image_3",
+            "label": "Foto 3",
+            "name": "image_3",
+            "type": "image",
+            "return_format": "array"
+          },
+          {
+            "key": "field_gallery_image_4",
+            "label": "Foto 4",
+            "name": "image_4",
+            "type": "image",
+            "return_format": "array"
+          },
+          {
+            "key": "field_gallery_image_5",
+            "label": "Foto 5",
+            "name": "image_5",
+            "type": "image",
+            "return_format": "array"
+          },
+          {
+            "key": "field_gallery_image_6",
+            "label": "Foto 6",
+            "name": "image_6",
+            "type": "image",
+            "return_format": "array"
+          },
+          {
+            "key": "field_gallery_image_7",
+            "label": "Foto 7",
+            "name": "image_7",
+            "type": "image",
+            "return_format": "array"
+          },
+          {
+            "key": "field_gallery_image_8",
+            "label": "Foto 8",
+            "name": "image_8",
+            "type": "image",
+            "return_format": "array"
+          },
+          {
+            "key": "field_gallery_image_9",
+            "label": "Foto 9",
+            "name": "image_9",
+            "type": "image",
+            "return_format": "array"
+          },
+          {
+            "key": "field_gallery_image_10",
+            "label": "Foto 10",
+            "name": "image_10",
+            "type": "image",
+            "return_format": "array"
+          }
+        ]
+      }
+    ],
+    "location": [
+      [
+        {
+          "param": "page_type",
+          "operator": "==",
+          "value": "front_page"
+        }
+      ]
+    ],
+    "menu_order": 0,
+    "position": "normal",
+    "style": "default",
+    "label_placement": "top",
+    "instruction_placement": "label",
+    "hide_on_screen": "",
+    "active": true,
+    "show_in_graphql": 1,
+    "graphql_field_name": "homeContent"
+  },
+  {
+    "key": "group_lionitas_site_settings",
+    "title": "Site-instellingen (Footer / Contact)",
+    "fields": [
+      {
+        "key": "field_tab_contact",
+        "label": "Contact",
+        "name": "",
+        "type": "tab",
+        "placement": "top"
+      },
+      {
+        "key": "field_contact_group",
+        "label": "Contactgegevens",
+        "name": "contact",
+        "type": "group",
+        "layout": "block",
+        "sub_fields": [
+          {
+            "key": "field_contact_address",
+            "label": "Adres",
+            "name": "address",
+            "type": "textarea",
+            "rows": 2,
+            "default_value": "Middelzeelaan 20, 8931 AK Leeuwarden"
+          },
+          {
+            "key": "field_contact_phone",
+            "label": "Telefoonnummer",
+            "name": "phone",
+            "type": "text",
+            "default_value": "058 289 8079"
+          },
+          {
+            "key": "field_contact_email",
+            "label": "E-mailadres",
+            "name": "email",
+            "type": "email",
+            "default_value": "info@lionitas.nl"
+          }
+        ]
+      },
+      {
+        "key": "field_tab_social",
+        "label": "Social media",
+        "name": "",
+        "type": "tab",
+        "placement": "top"
+      },
+      {
+        "key": "field_social_group",
+        "label": "Social links",
+        "name": "social",
+        "type": "group",
+        "layout": "block",
+        "sub_fields": [
+          {
+            "key": "field_social_facebook",
+            "label": "Facebook URL",
+            "name": "facebook_url",
+            "type": "url"
+          },
+          {
+            "key": "field_social_instagram",
+            "label": "Instagram URL",
+            "name": "instagram_url",
+            "type": "url"
+          },
+          {
+            "key": "field_social_linkedin",
+            "label": "LinkedIn URL",
+            "name": "linkedin_url",
+            "type": "url"
+          }
+        ]
+      }
+    ],
+    "location": [
+      [
+        {
+          "param": "post_type",
+          "operator": "==",
+          "value": "page"
+        }
+      ]
+    ],
+    "menu_order": 1,
+    "position": "normal",
+    "style": "default",
+    "label_placement": "top",
+    "instruction_placement": "label",
+    "hide_on_screen": "",
+    "active": true,
+    "show_in_graphql": 1,
+    "graphql_field_name": "siteSettings"
+  }
+]

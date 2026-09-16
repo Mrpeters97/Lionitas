@@ -32,7 +32,7 @@ export default function ImageMarquee({ images }: { images: WPImage[] }) {
         {track.map((image, index) => (
           <div
             key={index}
-            className={`mr-[2.5vw] aspect-[222/215] w-[58vw] max-w-[420px] shrink-0 overflow-hidden rounded-media sm:w-[24vw] ${
+            className={`mr-[2.5vw] aspect-[222/215] w-[58vw] max-w-[420px] shrink-0 overflow-hidden rounded-[14px] sm:w-[24vw] sm:rounded-media ${
               index % 2 === 1 ? "mt-[6vw]" : ""
             }`}
           >

@@ -59,7 +59,9 @@ export default function ContentBlock({
         {/* Vaste hoogte via aspect-ratio (i.p.v. h-auto, dat de hoogte liet meeschalen
             met de eigen verhouding van de geüploade afbeelding) — beide contentblokken
             krijgen zo altijd exact dezelfde hoogte, ongeacht de bronafbeelding. */}
-        <div className="relative aspect-[750/444] w-full overflow-hidden rounded-media bg-navy/10">
+        {/* Kleinere radius op mobiel (32px oogt daar te fors) — volle rounded-media
+            pas vanaf md, waar de afbeelding ook echt breder wordt. */}
+        <div className="relative aspect-[750/444] w-full overflow-hidden rounded-[14px] bg-navy/10 sm:rounded-[20px] md:rounded-media">
           {image?.node && (
             <Image
               src={image.node.sourceUrl}

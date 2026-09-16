@@ -120,13 +120,21 @@ export default async function Footer() {
           staat, en dus weer de camouflage-schaduw/rand krijgt — net als in de hero. */}
       <footer
         data-surface="brand"
-        className="relative z-10 overflow-hidden rounded-t-section bg-surface-brand text-on-dark"
-        style={{ marginTop: "calc(var(--radius-section) * -1)" }}
+        className="relative z-10 overflow-hidden bg-surface-brand text-on-dark"
+        style={{
+          // Vloeiend kleiner op smalle viewports (50px oogde daar te fors) — dezelfde
+          // clamp() stuurt zowel de zichtbare ronding als de overlap-marge, dus die
+          // blijven altijd exact gelijk en de naad blijft naadloos.
+          borderTopLeftRadius: "clamp(20px, 6vw, 50px)",
+          borderTopRightRadius: "clamp(20px, 6vw, 50px)",
+          marginTop: "calc(clamp(20px, 6vw, 50px) * -1)",
+        }}
       >
-        <Container className="relative z-10 pt-16 pb-32 sm:pt-20 sm:pb-40">
+        <Container className="relative z-10 pt-16 pb-10 sm:pt-20 sm:pb-16 xl:pb-40">
         <div className="flex flex-col gap-14 lg:flex-row lg:items-start lg:justify-between lg:gap-24">
-          {/* Logo + CTA */}
-          <div className="shrink-0">
+          {/* Logo + CTA — gecentreerd op mobiel/tablet, links uitgelijnd vanaf lg
+              (waar het naast de kolommen komt te staan). */}
+          <div className="flex shrink-0 flex-col items-center text-center lg:items-start lg:text-left">
             {/* eslint-disable-next-line @next/next/no-img-element */}
             <img
               src="/logos/lionitas-logo-footer.svg"
@@ -138,8 +146,10 @@ export default async function Footer() {
             </PillLink>
           </div>
 
-          {/* Kolommen — rechts uitgelijnd, logo blijft links */}
-          <div className="flex flex-col gap-10 min-[560px]:flex-row min-[560px]:gap-x-14 lg:gap-x-20 xl:gap-x-28">
+          {/* Kolommen — rechts uitgelijnd, logo blijft links. Alleen op mobiel (onder
+              de min-[560px]-omslag naar naast-elkaar) een lijntje tussen de rijen,
+              zelfde stijl als de divider helemaal onderaan. */}
+          <div className="flex flex-col gap-10 max-[559px]:divide-y max-[559px]:divide-accent/60 min-[560px]:flex-row min-[560px]:gap-x-14 lg:gap-x-20 xl:gap-x-28">
             <div>
               <h2 className="text-label">Lionitas</h2>
               <address className="mt-4 flex flex-col gap-4 not-italic text-body">

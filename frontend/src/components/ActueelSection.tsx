@@ -86,7 +86,7 @@ function ActueelCard({ post, index = 0 }: { post: WordPressPost; index?: number 
       whileHover={touchLayout ? undefined : "hover"}
       whileFocus={touchLayout ? undefined : "hover"}
       transition={entranceTransition}
-      className="group relative block h-[420px] overflow-hidden rounded-card bg-navy/20 focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-yellow sm:h-[480px]"
+      className="group relative block h-[420px] overflow-hidden rounded-[14px] bg-navy/20 focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-yellow sm:h-[480px] sm:rounded-[20px] xl:rounded-card"
     >
       {inView && post.featuredImage?.node && (
         <motion.div variants={imageVariants} transition={spring} className="absolute inset-0">
@@ -104,7 +104,7 @@ function ActueelCard({ post, index = 0 }: { post: WordPressPost; index?: number 
         aria-hidden
         variants={blurVariants}
         transition={spring}
-        className="absolute inset-0 rounded-card backdrop-blur-md"
+        className="absolute inset-0 rounded-[14px] backdrop-blur-md sm:rounded-[20px] xl:rounded-card"
       />
 
       <motion.span

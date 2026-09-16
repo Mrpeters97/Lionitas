@@ -61,7 +61,7 @@ export default function HomeCard({ card, index = 0 }: { card: ContentCard; index
   // dus 20px oogt daar te fors) — volle rounded-panel pas vanaf xl, waar de kaarten
   // in het grid ook echt groter worden.
   const wrapperClass =
-    "group relative block aspect-[485/521] overflow-hidden rounded-[16px] bg-navy/20 focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-yellow xl:rounded-panel";
+    "group relative block aspect-[485/521] overflow-hidden rounded-[12px] bg-navy/20 focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-yellow sm:rounded-[16px] xl:rounded-panel";
 
   // Iets ruimer dan ScrollReveal's eigen -80px/0.2, zodat de foto pas laadt als de
   // kaart echt (en niet nog maar net) in beeld is. Op touch staan de kaarten in een

@@ -96,7 +96,7 @@ export default async function Home() {
             y={40}
             className="-mb-bleed-hero relative mt-14 px-4 sm:px-6 lg:px-10 xl:px-16"
           >
-            <div className="relative aspect-[4/5] overflow-hidden rounded-hero sm:aspect-[16/9] xl:aspect-[1738/798]">
+            <div className="relative aspect-[4/5] overflow-hidden rounded-[28px] sm:aspect-[16/9] sm:rounded-[40px] xl:aspect-[1738/798] xl:rounded-hero">
               <Image
                 src={hero.backgroundImage.node.sourceUrl}
                 alt={hero.backgroundImage.node.altText || ""}

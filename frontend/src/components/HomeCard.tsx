@@ -6,6 +6,7 @@ import Link from "next/link";
 import { motion, useInView, useReducedMotion } from "framer-motion";
 import type { ContentCard } from "@/lib/wordpress";
 import { ArrowIcon, PILL_STYLES } from "@/components/PillLink";
+import { useCardSliderInView } from "@/components/CardSlider";
 import { useTouchLayout } from "@/lib/useTouchLayout";
 
 const spring = { type: "spring" as const, stiffness: 280, damping: 28 };
@@ -56,13 +57,23 @@ const MotionLink = motion.create(Link);
 export default function HomeCard({ card, index = 0 }: { card: ContentCard; index?: number }) {
   const touchLayout = useTouchLayout();
   const restState = touchLayout ? "revealed" : "rest";
+  // Kleinere radius zolang de kaarten in de mobiele/tablet-slider staan (smaller,
+  // dus 20px oogt daar te fors) — volle rounded-panel pas vanaf xl, waar de kaarten
+  // in het grid ook echt groter worden.
   const wrapperClass =
-    "group relative block aspect-[485/521] overflow-hidden rounded-panel bg-navy/20 focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-yellow";
+    "group relative block aspect-[485/521] overflow-hidden rounded-[16px] bg-navy/20 focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-yellow xl:rounded-panel";
 
   // Iets ruimer dan ScrollReveal's eigen -80px/0.2, zodat de foto pas laadt als de
-  // kaart echt (en niet nog maar net) in beeld is.
+  // kaart echt (en niet nog maar net) in beeld is. Op touch staan de kaarten in een
+  // horizontaal scrollbare track — een IntersectionObserver op de kaart zelf houdt
+  // óók rekening met de clipping van die track, dus een (nog) niet-geswipete kaart
+  // telt nooit als "in view", ongeacht rootMargin. Vandaar op touch de gedeelde
+  // `inView` van CardSlider (gemeten op de niet-geclipte buitenste wrapper) — laat
+  // alle drie kaarten tegelijk zien i.p.v. pas losjes bij het swipen.
   const cardRef = useRef<HTMLAnchorElement | HTMLDivElement>(null);
-  const inView = useInView(cardRef, { once: true, margin: "-100px", amount: 0.3 });
+  const individualInView = useInView(cardRef, { once: true, margin: "-100px", amount: 0.3 });
+  const sharedInView = useCardSliderInView();
+  const inView = touchLayout ? sharedInView : individualInView;
   const reduceMotion = useReducedMotion();
 
   const content = (
@@ -100,9 +111,12 @@ export default function HomeCard({ card, index = 0 }: { card: ContentCard; index
     </>
   );
 
+  // Stagger alleen op desktop (grid) — op touch (horizontale slider) juist alle drie
+  // tegelijk, zoals gevraagd.
+  const staggerDelay = touchLayout ? 0.15 : 0.15 + index * 0.15;
   const entranceTransition = {
-    opacity: { duration: 0.7, delay: 0.15 + index * 0.15, ease: [0.22, 1, 0.36, 1] as const },
-    y: { duration: 0.7, delay: 0.15 + index * 0.15, ease: [0.22, 1, 0.36, 1] as const },
+    opacity: { duration: 0.7, delay: staggerDelay, ease: [0.22, 1, 0.36, 1] as const },
+    y: { duration: 0.7, delay: staggerDelay, ease: [0.22, 1, 0.36, 1] as const },
   };
 
   if (card.link?.url) {

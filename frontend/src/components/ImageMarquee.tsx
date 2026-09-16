@@ -8,9 +8,9 @@ import type { WPImage } from "@/lib/wordpress";
 export default function ImageMarquee({ images }: { images: WPImage[] }) {
   const containerRef = useRef<HTMLDivElement>(null);
   // Positieve margin (i.p.v. de -100px die de kaarten elders gebruiken): triggert al
-  // wanneer de marquee nog een stukje onder de viewport zit, dus iets eerder dan
-  // "pas als 'ie echt zichtbaar is".
-  const inView = useInView(containerRef, { once: true, margin: "200px", amount: 0 });
+  // wanneer de marquee nog een flink stuk onder de viewport zit. Ruim gezet omdat op
+  // mobiel (kortere viewport) hetzelfde aantal pixels relatief veel later aanvoelt.
+  const inView = useInView(containerRef, { once: true, margin: "500px", amount: 0 });
   const reduceMotion = useReducedMotion();
 
   if (images.length === 0) return null;

@@ -148,12 +148,9 @@ export default function Header() {
             })}
           </nav>
 
-          <div className="flex shrink-0 items-center gap-3 xl:gap-2">
-            <div className="xl:hidden">
-              <PillLink href="/lid-worden" variant="yellow" compact>
-                Lid worden
-              </PillLink>
-            </div>
+          <div className="flex shrink-0 items-center gap-2">
+            {/* Op mobiel/tablet staat de CTA in het uitgeklapte menu (zie hieronder) —
+                naast de hamburger in de balk zelf werd het te krap. */}
             <div className="hidden xl:block">
               <PillLink href="/lid-worden" variant="yellow">
                 Lid worden
@@ -204,6 +201,11 @@ export default function Header() {
                 <nav className="flex flex-col divide-y divide-white/10">
                   {NAV_LINKS.map((link) => renderMobileNavLink(link))}
                 </nav>
+                <div className="mt-6 border-t border-white/10 pt-6">
+                  <PillLink href="/lid-worden" variant="yellow" onClick={() => setMenuOpen(false)}>
+                    Lid worden
+                  </PillLink>
+                </div>
               </div>
             </motion.div>
           )}

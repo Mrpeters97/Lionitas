@@ -6,7 +6,7 @@ import Link from "next/link";
 import { motion, useInView, useReducedMotion } from "framer-motion";
 import type { WordPressPost } from "@/lib/wordpress";
 import { ArrowIcon } from "@/components/PillLink";
-import CardSlider from "@/components/CardSlider";
+import CardSlider, { useCardSliderInView } from "@/components/CardSlider";
 import { useTouchLayout } from "@/lib/useTouchLayout";
 
 function formatDate(date: string) {
@@ -56,14 +56,24 @@ function ActueelCard({ post, index = 0 }: { post: WordPressPost; index?: number 
   const touchLayout = useTouchLayout();
 
   // Iets ruimer dan ScrollReveal's eigen -80px/0.2, zodat de foto pas laadt als de
-  // kaart echt (en niet nog maar net) in beeld is.
+  // kaart echt (en niet nog maar net) in beeld is. Op touch staan de kaarten in een
+  // horizontaal scrollbare track — een IntersectionObserver op de kaart zelf houdt
+  // óók rekening met de clipping van die track, dus een (nog) niet-geswipete kaart
+  // telt nooit als "in view", ongeacht rootMargin. Vandaar op touch de gedeelde
+  // `inView` van CardSlider (gemeten op de niet-geclipte buitenste wrapper) — laat
+  // alle drie kaarten tegelijk zien i.p.v. pas losjes bij het swipen.
   const cardRef = useRef<HTMLAnchorElement>(null);
-  const inView = useInView(cardRef, { once: true, margin: "-100px", amount: 0.3 });
+  const individualInView = useInView(cardRef, { once: true, margin: "-100px", amount: 0.3 });
+  const sharedInView = useCardSliderInView();
+  const inView = touchLayout ? sharedInView : individualInView;
   const reduceMotion = useReducedMotion();
 
+  // Stagger alleen op desktop (grid) — op touch (horizontale slider) juist alle drie
+  // tegelijk, zoals gevraagd.
+  const staggerDelay = touchLayout ? 0.15 : 0.15 + index * 0.15;
   const entranceTransition = {
-    opacity: { duration: 0.7, delay: 0.15 + index * 0.15, ease: [0.22, 1, 0.36, 1] as const },
-    y: { duration: 0.7, delay: 0.15 + index * 0.15, ease: [0.22, 1, 0.36, 1] as const },
+    opacity: { duration: 0.7, delay: staggerDelay, ease: [0.22, 1, 0.36, 1] as const },
+    y: { duration: 0.7, delay: staggerDelay, ease: [0.22, 1, 0.36, 1] as const },
   };
 
   return (

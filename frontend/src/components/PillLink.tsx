@@ -8,8 +8,6 @@ interface PillLinkProps {
   variant?: "yellow" | "blue" | "navy" | "outline-white" | "outline-cream";
   className?: string;
   onClick?: () => void;
-  /** Krappere padding/gap/tekstgrootte — voor plekken met weinig ruimte (bv. naast de hamburger op mobiel). */
-  compact?: boolean;
 }
 
 // Outline-varianten gebruiken `ring` (box-shadow) i.p.v. `border`: een border telt mee
@@ -64,17 +62,9 @@ export default function PillLink({
   variant = "blue",
   className = "",
   onClick,
-  compact = false,
 }: PillLinkProps) {
   const isExternal = /^https?:\/\//.test(href);
-  // Compact bespaart horizontale ruimte (padding/gap) én gebruikt een iets kleinere
-  // tekst (14px i.p.v. 17px) — voor de mobiele navbar-cta naast de hamburger, waar de
-  // standaardmaat net te fors oogde. Gewicht blijft 600 (font-semibold), net als
-  // text-label, zodat 'm niet dunner aanvoelt.
-  const sizing = compact
-    ? "gap-1.5 py-2.5 pl-4 pr-2 text-sm font-semibold"
-    : "gap-2.5 py-2.5 pl-5 pr-2.5 text-label";
-  const classes = `group inline-flex items-center rounded-pill transition-colors duration-500 ease-[cubic-bezier(0.16,1,0.3,1)] focus-visible:outline-2 focus-visible:outline-offset-2 ${sizing} ${PILL_STYLES[variant]} ${className}`;
+  const classes = `group inline-flex items-center gap-2.5 rounded-pill py-2.5 pl-5 pr-2.5 text-label transition-colors duration-500 ease-[cubic-bezier(0.16,1,0.3,1)] focus-visible:outline-2 focus-visible:outline-offset-2 ${PILL_STYLES[variant]} ${className}`;
 
   const content = (
     <>

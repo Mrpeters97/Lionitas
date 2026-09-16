@@ -16,7 +16,11 @@ export default function RootLayout({ children }: LayoutProps<"/">) {
       <body className="min-h-full flex flex-col font-sans">
         <ReactLenis root options={{ lerp: 0.1, duration: 1.2, smoothWheel: true }}>
           <Header />
-          <main className="flex flex-1 flex-col">{children}</main>
+          {/* relative z-10 + eigen achtergrond: zonder dit "schemert" het fixed
+              LIONITAS-paneel in de footer (zie WordmarkReveal) door secties heen die
+              zelf geen expliciete z-index/achtergrond hebben (bv. FaqGallerySection) —
+              het paneel mag pas zichtbaar worden ná de footer, nergens eerder. */}
+          <main className="relative z-10 flex flex-1 flex-col bg-background">{children}</main>
           <Footer />
         </ReactLenis>
       </body>

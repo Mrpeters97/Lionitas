@@ -1,6 +1,7 @@
 "use client";
 
 import { Children, useEffect, useRef, useState, type ReactNode } from "react";
+import { useTouchLayout } from "@/lib/useTouchLayout";
 
 /**
  * Mobiel/tablet: horizontale scroll-snap slider die tot de schermrand doorloopt en
@@ -26,6 +27,10 @@ export default function CardSlider({
   const trackRef = useRef<HTMLDivElement>(null);
   const slideRefs = useRef<(HTMLDivElement | null)[]>([]);
   const [active, setActive] = useState(0);
+  // Alleen onder xl is de track de horizontaal scrollbare slider — daar moet Lenis
+  // zijn vingers ervan af houden. Vanaf xl is het een statisch grid (overflow-visible),
+  // en moet gewoon wiel-scrollen over de kaarten weer normaal smooth verlopen.
+  const touchLayout = useTouchLayout();
 
   useEffect(() => {
     const track = trackRef.current;
@@ -69,7 +74,7 @@ export default function CardSlider({
     <div className={className || undefined}>
       <div
         ref={trackRef}
-        data-lenis-prevent
+        data-lenis-prevent={touchLayout || undefined}
         className="no-scrollbar -mx-6 flex snap-x snap-mandatory gap-6 overflow-x-auto scroll-px-6 px-6 py-2 sm:-mx-10 sm:scroll-px-10 sm:px-10 xl:mx-0 xl:grid xl:grid-cols-3 xl:gap-8 xl:overflow-visible xl:p-0"
       >
         {items.map((child, i) => (

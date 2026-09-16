@@ -37,78 +37,98 @@ export default async function Home() {
 
   return (
     <div className="flex flex-col">
-      {/* Hero */}
+      {/* Hero — tekst gecentreerd op lichtblauw, foto als los paneel dat doorloopt in de navy-sectie */}
       <Section
-        bg="dark"
+        bg="brand"
         roundBottom
         z={10}
         padTop={false}
         padBottom={false}
         bare
-        className="min-h-[clamp(660px,85svh,940px)] overflow-hidden"
-      >
-        {hero.backgroundImage?.node && (
-          <>
-            <Image
-              src={hero.backgroundImage.node.sourceUrl}
-              alt={hero.backgroundImage.node.altText || ""}
-              fill
-              priority
-              className="object-cover"
-            />
-            <div
-              aria-hidden
-              className="absolute inset-0 bg-[linear-gradient(0deg,rgba(0,0,0,0.00)_75.36%,rgba(0,0,0,0.54)_100%),linear-gradient(0deg,rgba(0,0,0,0.50)_0%,rgba(0,0,0,0.50)_100%)]"
-            />
-          </>
-        )}
-        <Container className="relative flex min-h-[clamp(660px,85svh,940px)] flex-col justify-center py-28">
-          <h1 className="h1 max-w-2xl text-on-dark">{hero.heading}</h1>
-          <p className="mt-6 max-w-xl text-body text-on-dark-muted">{hero.text}</p>
-          <div className="mt-8 flex flex-wrap gap-4">
-            {hero.primaryButtonLink?.url && (
-              <PillLink href={hero.primaryButtonLink.url} variant="yellow">
-                {hero.primaryButtonLabel}
-              </PillLink>
-            )}
-            {hero.secondaryButtonLink?.url && (
-              <PillLink href={hero.secondaryButtonLink.url} variant="outline-white">
-                {hero.secondaryButtonLabel}
-              </PillLink>
-            )}
-          </div>
-        </Container>
-      </Section>
-
-      {/* Intro + cards */}
-      <Section
-        bg="brand"
-        connect
-        roundBottom
-        padBottom={false}
-        z={6}
-        containerClassName="relative"
         decoration={
-          <div aria-hidden className="pointer-events-none absolute inset-0 overflow-hidden rounded-b-section">
+          <div
+            aria-hidden
+            className="pointer-events-none absolute inset-0 overflow-hidden rounded-b-section"
+          >
+            {/* Strikt inset-0: blijft binnen de eigen (afgeronde) hero-vorm, loopt nooit door
+                in de volgende sectie. Natuurlijke aspect ratio (geen object-cover/w-%) — anders
+                vervormt/crop de svg links onvoorspelbaar. */}
             {/* eslint-disable-next-line @next/next/no-img-element */}
             <img
               src="/decorative/strepen-top.svg"
               alt=""
-              className="absolute right-0 top-0 h-full w-[45%] select-none object-cover object-right opacity-40"
+              className="absolute right-0 top-0 h-full w-auto select-none opacity-[0.04]"
             />
           </div>
         }
       >
+        <Container className="relative flex flex-col items-center pb-0 pt-32 text-center sm:pt-36 xl:pt-44">
+          <ScrollReveal trigger="mount" duration={0.9}>
+            {intro.eyebrow && <p className="eyebrow">{intro.eyebrow}</p>}
+            <h1 className={`h1 xl:whitespace-nowrap text-on-dark ${intro.eyebrow ? "mt-2" : ""}`}>
+              {hero.heading}
+            </h1>
+          </ScrollReveal>
+          <ScrollReveal trigger="mount" duration={0.9} delay={0.15}>
+            <p className="mt-6 max-w-2xl text-body text-on-dark-muted">{hero.text}</p>
+          </ScrollReveal>
+          <ScrollReveal trigger="mount" duration={0.9} delay={0.3}>
+            <div className="mt-8 flex flex-wrap justify-center gap-4">
+              {hero.primaryButtonLink?.url && (
+                <PillLink href={hero.primaryButtonLink.url} variant="yellow">
+                  {hero.primaryButtonLabel}
+                </PillLink>
+              )}
+              {hero.secondaryButtonLink?.url && (
+                <PillLink href={hero.secondaryButtonLink.url} variant="outline-cream">
+                  {hero.secondaryButtonLabel}
+                </PillLink>
+              )}
+            </div>
+          </ScrollReveal>
+        </Container>
+
+        {hero.backgroundImage?.node && (
+          <ScrollReveal
+            trigger="mount"
+            duration={1.1}
+            delay={0.45}
+            y={40}
+            className="-mb-bleed-hero relative mt-14 px-4 sm:px-6 lg:px-10 xl:px-16"
+          >
+            <div className="relative aspect-[4/5] overflow-hidden rounded-hero sm:aspect-[16/9] xl:aspect-[1738/798]">
+              <Image
+                src={hero.backgroundImage.node.sourceUrl}
+                alt={hero.backgroundImage.node.altText || ""}
+                fill
+                priority
+                className="object-cover"
+              />
+            </div>
+          </ScrollReveal>
+        )}
+      </Section>
+
+      {/* Intro + cards */}
+      <Section
+        bg="dark"
+        colorFrom="brand"
+        connect
+        connectExtra="var(--spacing-bleed-hero)"
+        roundBottom
+        padBottom={false}
+        z={6}
+        containerClassName="relative"
+      >
         <ScrollReveal className="mx-auto max-w-2xl text-center">
-          {intro.eyebrow && <p className="eyebrow">{intro.eyebrow}</p>}
-          <h2 className="mt-2 h2 text-on-dark">{intro.heading}</h2>
+          <h2 className="h2 text-on-dark">{intro.heading}</h2>
           <p className="mt-4 text-body text-on-dark-muted">{intro.text}</p>
         </ScrollReveal>
 
         <div className="-mb-bleed-cards mt-14">
           <CardSlider>
-            {cards.map((card) => (
-              <HomeCard key={card.title} card={card} />
+            {cards.map((card, index) => (
+              <HomeCard key={card.title} card={card} index={index} />
             ))}
           </CardSlider>
         </div>
@@ -118,6 +138,7 @@ export default async function Home() {
           bovenaan in (connectExtra), de Actueel-kaarten steken er onderaan uit (Figma-node 39:339) */}
       <Section
         bg="soft"
+        colorFrom="dark"
         connect
         connectExtra="var(--spacing-bleed-cards)"
         roundBottom
@@ -133,6 +154,7 @@ export default async function Home() {
             buttonLink={contentBlock1.buttonLink}
             image={contentBlock1.image}
             imagePosition={contentBlock1.imagePosition}
+            imageFocus={contentBlock1.imageFocus}
             buttonVariant="yellow"
             className="md:mt-10"
           />
@@ -155,7 +177,7 @@ export default async function Home() {
       </Section>
 
       {/* Over Lionitas — vangt de doorstekende Actueel-kaarten op via connectExtra */}
-      <Section connect connectExtra="var(--spacing-bleed)" padBottom={false} z={4}>
+      <Section bg="page" colorFrom="soft" connect connectExtra="var(--spacing-bleed)" padBottom={false} z={4}>
         <ContentBlock
           heading={contentBlock2.heading}
           text={contentBlock2.text}
@@ -163,6 +185,7 @@ export default async function Home() {
           buttonLink={contentBlock2.buttonLink}
           image={contentBlock2.image}
           imagePosition={contentBlock2.imagePosition}
+          imageFocus={contentBlock2.imageFocus}
         />
       </Section>
 

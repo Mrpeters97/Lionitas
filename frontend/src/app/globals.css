@@ -20,6 +20,11 @@
   --color-blue-hover: #096099;
   --color-yellow: #ffed00;
   --color-yellow-hover: #d9c900;
+  /* -hover-strong: alleen voor knop-hover op de gele/blauwe PillLink-varianten — de
+     gewone -hover-tint is elders (rand, hamburger) bewust subtiel; knop-hover moet
+     juist goed zichtbaar zijn. */
+  --color-yellow-hover-strong: #c2b400;
+  --color-blue-hover-strong: #06456e;
   --color-cream: #faf0e0;
   --color-ink: #101010;
   --color-page: #f6f6f6;
@@ -86,6 +91,7 @@
   --radius-panel: 20px; /* FAQ-kaarten, "Baan/Weg/Loopgroepen"-kaarten */
   --radius-card: 30px; /* Actueel-kaarten */
   --radius-media: 32px; /* contentblok-afbeeldingen, marquee-tegels */
+  --radius-hero: 60px; /* hero-foto (los paneel onder de hero-tekst) */
   --radius-section: 50px; /* sectie-onderhoeken */
 
   /* ---- Container ---- */
@@ -98,6 +104,7 @@
      volgende <Section connect>; de zichtbare gap blijft dan exact --spacing-section. */
   --spacing-bleed: 15rem; /* 240 — Actueel-kaarten */
   --spacing-bleed-cards: 8rem; /* 128 — intro-kaarten die op de cream-sectie vallen */
+  --spacing-bleed-hero: 16rem; /* 256 — hero-foto die doorloopt in de brand-sectie */
 }
 
 /*

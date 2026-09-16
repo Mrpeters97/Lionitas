@@ -3,6 +3,8 @@
 import { useEffect, useState } from "react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
+import { AnimatePresence, motion } from "framer-motion";
+import { Menu, X } from "lucide-react";
 import PillLink from "@/components/PillLink";
 
 const NAV_LINKS = [
@@ -13,17 +15,50 @@ const NAV_LINKS = [
   { label: "Contact", href: "/contact" },
 ];
 
+// Verticale positie (in px vanaf de viewport-top) waarop we peilen welke sectie
+// achter de pill zit — komt overeen met het midden van de pill (top-4 = 16px +
+// ~helft van de pillhoogte).
+const PROBE_Y = 40;
+
+// De pill z'n eigen achtergrond-rol. Zodra de sectie erachter dezelfde rol heeft
+// (de pill "camoufleert" ertegen, zoals nu in de hero), krijgt de pill een
+// subtiele schaduw i.p.v. te vertrouwen op kleurcontrast.
+const PILL_BG = "brand";
+
 export default function Header() {
   const pathname = usePathname();
-  const [scrolled, setScrolled] = useState(false);
+  const [surface, setSurface] = useState<string | null>(PILL_BG);
   const [menuOpen, setMenuOpen] = useState(false);
+  const [hoveredHref, setHoveredHref] = useState<string | null>(null);
 
   useEffect(() => {
-    const onScroll = () => setScrolled(window.scrollY > 8);
-    onScroll();
+    const check = () => {
+      const sections = document.querySelectorAll<HTMLElement>("[data-surface]");
+      let current: string | null = null;
+      sections.forEach((section) => {
+        const rect = section.getBoundingClientRect();
+        if (rect.top <= PROBE_Y && rect.bottom >= PROBE_Y) current = section.dataset.surface ?? null;
+      });
+      setSurface(current);
+    };
+
+    check();
+    let ticking = false;
+    const onScroll = () => {
+      if (ticking) return;
+      ticking = true;
+      requestAnimationFrame(() => {
+        check();
+        ticking = false;
+      });
+    };
     window.addEventListener("scroll", onScroll, { passive: true });
-    return () => window.removeEventListener("scroll", onScroll);
-  }, []);
+    window.addEventListener("resize", onScroll);
+    return () => {
+      window.removeEventListener("scroll", onScroll);
+      window.removeEventListener("resize", onScroll);
+    };
+  }, [pathname]);
 
   useEffect(() => {
     setMenuOpen(false);
@@ -44,19 +79,19 @@ export default function Header() {
     };
   }, [menuOpen]);
 
-  const desktopDark = scrolled;
+  const isLinkActive = (href: string) => (href === "/" ? pathname === "/" : pathname.startsWith(href));
 
-  const renderNavLink = (link: (typeof NAV_LINKS)[number], mobile = false) => {
-    const isActive = link.href === "/" ? pathname === "/" : pathname.startsWith(link.href);
+  const renderMobileNavLink = (link: (typeof NAV_LINKS)[number]) => {
+    const isActive = isLinkActive(link.href);
     return (
       <Link
         key={link.href}
         href={link.href}
         aria-current={isActive ? "page" : undefined}
-        onClick={mobile ? () => setMenuOpen(false) : undefined}
-        className={`rounded-sm transition focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-yellow ${
-          mobile ? "block py-3 text-lg" : "whitespace-nowrap text-body"
-        } ${isActive ? "font-semibold text-yellow" : "font-medium text-white hover:text-yellow"}`}
+        onClick={() => setMenuOpen(false)}
+        className={`block rounded-sm py-3 text-lg transition focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-yellow ${
+          isActive ? "font-semibold text-yellow" : "font-medium text-white hover:text-yellow"
+        }`}
       >
         {link.label}
       </Link>
@@ -64,11 +99,13 @@ export default function Header() {
   };
 
   return (
-    <header className="fixed inset-x-0 top-4 z-50 flex justify-center px-6">
-      <div className="w-full xl:w-auto">
+    <header className="fixed inset-x-0 top-4 z-50 flex justify-center px-4 xl:px-6">
+      <div className="w-full xl:max-w-6xl">
         <div
-          className={`flex items-center justify-between gap-4 rounded-[40px] bg-navy py-5 pl-[30px] pr-5 shadow-lg shadow-black/25 transition-all duration-300 ease-out xl:gap-[242px] xl:rounded-pill ${
-            desktopDark ? "xl:bg-navy xl:shadow-lg xl:shadow-black/25" : "xl:bg-transparent xl:shadow-none"
+          className={`flex items-center justify-between gap-4 rounded-pill border bg-surface-brand py-3 pl-5 pr-4 transition-all duration-300 ease-out xl:py-5 xl:pl-[30px] xl:pr-5 ${
+            surface === PILL_BG
+              ? "border-blue-hover shadow-[0_8px_30px_rgba(0,14,53,0.16)]"
+              : "border-transparent"
           }`}
         >
           <Link
@@ -76,59 +113,101 @@ export default function Header() {
             className="shrink-0 focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-yellow"
           >
             {/* eslint-disable-next-line @next/next/no-img-element */}
-            <img src="/logos/lionitas-logo-header.svg" alt="Lionitas" className="h-[26px] w-auto" />
+            <img src="/logos/lionitas-logo-header.svg" alt="Lionitas" className="h-[19px] w-auto xl:h-[26px]" />
           </Link>
 
-          <div className="hidden items-center gap-16 xl:flex">
-            <nav className="flex items-center gap-8">{NAV_LINKS.map((link) => renderNavLink(link))}</nav>
-            <PillLink href="/lid-worden" variant="yellow">
-              Lid worden
-            </PillLink>
-          </div>
-
-          <button
-            type="button"
-            onClick={() => setMenuOpen((open) => !open)}
-            aria-expanded={menuOpen}
-            aria-controls="mobile-menu"
-            aria-label={menuOpen ? "Sluit menu" : "Open menu"}
-            className="flex h-11 w-11 shrink-0 items-center justify-center rounded-full bg-yellow transition focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-navy xl:hidden"
+          <nav
+            className="hidden flex-1 items-center justify-center gap-1 xl:flex"
+            onMouseLeave={() => setHoveredHref(null)}
           >
-            <span className="relative flex h-[14px] w-5 flex-col justify-between">
-              <span
-                className={`h-0.5 w-full origin-center rounded-full bg-navy transition-transform duration-300 ${
-                  menuOpen ? "translate-y-[6px] rotate-45" : ""
-                }`}
-              />
-              <span
-                className={`h-0.5 w-full rounded-full bg-navy transition-opacity duration-200 ${
-                  menuOpen ? "opacity-0" : "opacity-100"
-                }`}
-              />
-              <span
-                className={`h-0.5 w-full origin-center rounded-full bg-navy transition-transform duration-300 ${
-                  menuOpen ? "-translate-y-[6px] -rotate-45" : ""
-                }`}
-              />
-            </span>
-          </button>
-        </div>
+            {NAV_LINKS.map((link) => {
+              const isActive = isLinkActive(link.href);
+              const showPill = (hoveredHref ?? (isActive ? link.href : null)) === link.href;
+              return (
+                <Link
+                  key={link.href}
+                  href={link.href}
+                  aria-current={isActive ? "page" : undefined}
+                  onMouseEnter={() => setHoveredHref(link.href)}
+                  onFocus={() => setHoveredHref(link.href)}
+                  onBlur={() => setHoveredHref(null)}
+                  className={`relative rounded-pill px-4 py-2 text-meta whitespace-nowrap transition-colors focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-yellow ${
+                    showPill ? "text-navy" : "text-on-dark"
+                  }`}
+                >
+                  {showPill && (
+                    <motion.span
+                      layoutId="nav-pill"
+                      className="absolute inset-0 rounded-pill bg-cream"
+                      transition={{ type: "spring", stiffness: 400, damping: 32 }}
+                    />
+                  )}
+                  <span className="relative z-10">{link.label}</span>
+                </Link>
+              );
+            })}
+          </nav>
 
-        <div
-          id="mobile-menu"
-          className={`overflow-hidden transition-all duration-300 ease-out xl:hidden ${
-            menuOpen ? "mt-3 max-h-[80vh] opacity-100" : "max-h-0 opacity-0"
-          }`}
-        >
-          <div className="rounded-media bg-navy px-6 py-6 shadow-lg shadow-black/25">
-            <nav className="flex flex-col divide-y divide-white/10">
-              {NAV_LINKS.map((link) => renderNavLink(link, true))}
-            </nav>
-            <PillLink href="/lid-worden" variant="yellow" className="mt-6 w-full justify-center" onClick={() => setMenuOpen(false)}>
-              Lid worden
-            </PillLink>
+          <div className="flex shrink-0 items-center gap-3 xl:gap-2">
+            <div className="xl:hidden">
+              <PillLink href="/lid-worden" variant="yellow" compact>
+                Lid worden
+              </PillLink>
+            </div>
+            <div className="hidden xl:block">
+              <PillLink href="/lid-worden" variant="yellow">
+                Lid worden
+              </PillLink>
+            </div>
+
+            <button
+              type="button"
+              onClick={() => setMenuOpen((open) => !open)}
+              aria-expanded={menuOpen}
+              aria-controls="mobile-menu"
+              aria-label={menuOpen ? "Sluit menu" : "Open menu"}
+              className="flex h-10 w-10 shrink-0 items-center justify-center rounded-pill bg-navy transition hover:bg-navy-hover focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-yellow xl:hidden"
+            >
+              <span className="relative flex h-4 w-4 items-center justify-center">
+                <Menu
+                  aria-hidden
+                  size={16}
+                  strokeWidth={2}
+                  className={`absolute text-on-dark transition-all duration-300 ease-out motion-reduce:transition-none ${
+                    menuOpen ? "scale-75 opacity-0" : "scale-100 opacity-100"
+                  }`}
+                />
+                <X
+                  aria-hidden
+                  size={16}
+                  strokeWidth={2}
+                  className={`absolute text-on-dark transition-all duration-300 ease-out motion-reduce:transition-none ${
+                    menuOpen ? "scale-100 opacity-100" : "scale-75 opacity-0"
+                  }`}
+                />
+              </span>
+            </button>
           </div>
         </div>
+
+        <AnimatePresence>
+          {menuOpen && (
+            <motion.div
+              id="mobile-menu"
+              initial={{ opacity: 0, y: -8 }}
+              animate={{ opacity: 1, y: 0 }}
+              exit={{ opacity: 0, y: -8 }}
+              transition={{ duration: 0.2, ease: [0.22, 1, 0.36, 1] }}
+              className="mt-3 xl:hidden"
+            >
+              <div className="rounded-media border border-blue-hover bg-surface-brand px-6 py-6 shadow-lg shadow-black/25">
+                <nav className="flex flex-col divide-y divide-white/10">
+                  {NAV_LINKS.map((link) => renderMobileNavLink(link))}
+                </nav>
+              </div>
+            </motion.div>
+          )}
+        </AnimatePresence>
       </div>
     </header>
   );

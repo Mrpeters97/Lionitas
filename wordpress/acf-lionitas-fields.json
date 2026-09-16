@@ -248,6 +248,26 @@
             "return_format": "array"
           },
           {
+            "key": "field_cb1_image_focus",
+            "label": "Afbeelding uitsnede",
+            "instructions": "De afbeelding krijgt een vaste hoogte — kies met welk deel van het gridje de afbeelding daarbinnen gepositioneerd/uitgesneden wordt.",
+            "name": "image_focus",
+            "type": "select",
+            "choices": {
+              "left-top": "Linksboven",
+              "top": "Boven",
+              "right-top": "Rechtsboven",
+              "left": "Links",
+              "center": "Midden",
+              "right": "Rechts",
+              "left-bottom": "Linksonder",
+              "bottom": "Onder",
+              "right-bottom": "Rechtsonder"
+            },
+            "default_value": "center",
+            "return_format": "value"
+          },
+          {
             "key": "field_cb1_image_position",
             "label": "Afbeelding positie",
             "name": "image_position",
@@ -310,6 +330,26 @@
             "name": "image",
             "type": "image",
             "return_format": "array"
+          },
+          {
+            "key": "field_cb2_image_focus",
+            "label": "Afbeelding uitsnede",
+            "instructions": "De afbeelding krijgt een vaste hoogte — kies met welk deel van het gridje de afbeelding daarbinnen gepositioneerd/uitgesneden wordt.",
+            "name": "image_focus",
+            "type": "select",
+            "choices": {
+              "left-top": "Linksboven",
+              "top": "Boven",
+              "right-top": "Rechtsboven",
+              "left": "Links",
+              "center": "Midden",
+              "right": "Rechts",
+              "left-bottom": "Linksonder",
+              "bottom": "Onder",
+              "right-bottom": "Rechtsonder"
+            },
+            "default_value": "center",
+            "return_format": "value"
           },
           {
             "key": "field_cb2_image_position",

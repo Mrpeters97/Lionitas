@@ -75,6 +75,7 @@ export interface ContentBlock {
   buttonLink: WPLink | null;
   image: WPImage | null;
   imagePosition: string[] | null;
+  imageFocus: string[] | null;
 }
 
 export interface HomeContent {
@@ -166,6 +167,7 @@ export async function getHomeContent(): Promise<HomeContent> {
             buttonLink { ${LINK_FRAGMENT} }
             image { ${IMAGE_FRAGMENT} }
             imagePosition
+            imageFocus
           }
           contentBlock2 {
             heading
@@ -174,6 +176,7 @@ export async function getHomeContent(): Promise<HomeContent> {
             buttonLink { ${LINK_FRAGMENT} }
             image { ${IMAGE_FRAGMENT} }
             imagePosition
+            imageFocus
           }
           faq {
             heading

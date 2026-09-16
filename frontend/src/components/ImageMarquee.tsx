@@ -1,7 +1,18 @@
+"use client";
+
+import { useRef } from "react";
 import Image from "next/image";
+import { motion, useInView, useReducedMotion } from "framer-motion";
 import type { WPImage } from "@/lib/wordpress";
 
 export default function ImageMarquee({ images }: { images: WPImage[] }) {
+  const containerRef = useRef<HTMLDivElement>(null);
+  // Positieve margin (i.p.v. de -100px die de kaarten elders gebruiken): triggert al
+  // wanneer de marquee nog een stukje onder de viewport zit, dus iets eerder dan
+  // "pas als 'ie echt zichtbaar is".
+  const inView = useInView(containerRef, { once: true, margin: "200px", amount: 0 });
+  const reduceMotion = useReducedMotion();
+
   if (images.length === 0) return null;
 
   // De verticale stagger is strikt om-en-om (nooit twee tegels op dezelfde hoogte
@@ -16,7 +27,7 @@ export default function ImageMarquee({ images }: { images: WPImage[] }) {
   const track = [...base, ...base];
 
   return (
-    <div className="overflow-hidden">
+    <div ref={containerRef} className="overflow-hidden">
       <div className="flex w-max items-start animate-marquee motion-reduce:animate-none">
         {track.map((image, index) => (
           <div
@@ -25,13 +36,28 @@ export default function ImageMarquee({ images }: { images: WPImage[] }) {
               index % 2 === 1 ? "mt-[6vw]" : ""
             }`}
           >
-            <Image
-              src={image.node!.sourceUrl}
-              alt={image.node!.altText || ""}
-              width={222}
-              height={215}
-              className="h-full w-full object-cover"
-            />
+            {/* Pas mounten (en dus pas laden) zodra de marquee echt in beeld is, en dan
+                één voor één van links naar rechts — niet allemaal tegelijk. */}
+            {inView && (
+              <motion.div
+                className="h-full w-full"
+                initial={reduceMotion ? false : { opacity: 0 }}
+                animate={{ opacity: 1 }}
+                transition={{
+                  duration: 0.7,
+                  delay: reduceMotion ? 0 : 0.25 + index * 0.06,
+                  ease: [0.22, 1, 0.36, 1],
+                }}
+              >
+                <Image
+                  src={image.node!.sourceUrl}
+                  alt={image.node!.altText || ""}
+                  width={222}
+                  height={215}
+                  className="h-full w-full object-cover"
+                />
+              </motion.div>
+            )}
           </div>
         ))}
       </div>

@@ -1,8 +1,9 @@
 "use client";
 
+import { useRef } from "react";
 import Image from "next/image";
 import Link from "next/link";
-import { motion } from "framer-motion";
+import { motion, useInView, useReducedMotion } from "framer-motion";
 import type { WordPressPost } from "@/lib/wordpress";
 import { ArrowIcon } from "@/components/PillLink";
 import CardSlider from "@/components/CardSlider";
@@ -17,6 +18,15 @@ const spring = { type: "spring" as const, stiffness: 150, damping: 24 };
 const imageVariants = {
   rest: { scale: 1 },
   hover: { scale: 1.06 },
+};
+
+// Op de hele kaart (blok + foto samen) — niet los op de afbeelding — zodat er nooit
+// een leeg/donker blok te zien is voordat de foto er is. Pas als de kaart écht in
+// beeld scrolt (`inView`) wordt 'm gemount én tegelijk ingefade + ingeschoven.
+const cardEntranceVariants = {
+  hidden: { opacity: 0, y: 28 },
+  rest: { opacity: 1, y: 0 },
+  hover: { opacity: 1, y: 0 },
 };
 
 // Blur lives on its own full-card layer that only fades in (no transform), so its blur
@@ -41,20 +51,34 @@ const excerptVariants = {
 
 const MotionLink = motion.create(Link);
 
-function ActueelCard({ post }: { post: WordPressPost }) {
+function ActueelCard({ post, index = 0 }: { post: WordPressPost; index?: number }) {
   const category = post.categories.nodes[0]?.name;
   const touchLayout = useTouchLayout();
 
+  // Iets ruimer dan ScrollReveal's eigen -80px/0.2, zodat de foto pas laadt als de
+  // kaart echt (en niet nog maar net) in beeld is.
+  const cardRef = useRef<HTMLAnchorElement>(null);
+  const inView = useInView(cardRef, { once: true, margin: "-100px", amount: 0.3 });
+  const reduceMotion = useReducedMotion();
+
+  const entranceTransition = {
+    opacity: { duration: 0.7, delay: 0.15 + index * 0.15, ease: [0.22, 1, 0.36, 1] as const },
+    y: { duration: 0.7, delay: 0.15 + index * 0.15, ease: [0.22, 1, 0.36, 1] as const },
+  };
+
   return (
     <MotionLink
+      ref={cardRef}
       href={`/actueel/${post.slug}`}
-      initial="rest"
-      animate="rest"
+      variants={cardEntranceVariants}
+      initial={reduceMotion ? false : "hidden"}
+      animate={inView ? "rest" : "hidden"}
       whileHover={touchLayout ? undefined : "hover"}
       whileFocus={touchLayout ? undefined : "hover"}
+      transition={entranceTransition}
       className="group relative block h-[420px] overflow-hidden rounded-card bg-navy/20 focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-yellow sm:h-[480px]"
     >
-      {post.featuredImage?.node && (
+      {inView && post.featuredImage?.node && (
         <motion.div variants={imageVariants} transition={spring} className="absolute inset-0">
           <Image
             src={post.featuredImage.node.sourceUrl}
@@ -115,8 +139,8 @@ export default function ActueelSection({ posts }: { posts: WordPressPost[] }) {
 
   return (
     <CardSlider>
-      {items.map((post) => (
-        <ActueelCard key={post.id} post={post} />
+      {items.map((post, index) => (
+        <ActueelCard key={post.id} post={post} index={index} />
       ))}
     </CardSlider>
   );

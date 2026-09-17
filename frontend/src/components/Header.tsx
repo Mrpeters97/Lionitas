@@ -7,12 +7,16 @@ import { AnimatePresence, motion } from "framer-motion";
 import { Menu, X } from "lucide-react";
 import PillLink from "@/components/PillLink";
 
+// `path` = de echte route, gebruikt om de actieve pill te bepalen en als unieke
+// key. Alleen de Home-pagina is al gebouwd — de daadwerkelijke `<Link>`s hieronder
+// wijzen daarom tijdelijk allemaal naar "#" i.p.v. `path`, zodat er niet per
+// ongeluk naar een niet-bestaande pagina genavigeerd kan worden.
 const NAV_LINKS = [
-  { label: "Home", href: "/" },
-  { label: "Over Lionitas", href: "/over-lionitas" },
-  { label: "Actueel", href: "/actueel" },
-  { label: "Trainingen", href: "/trainingen" },
-  { label: "Contact", href: "/contact" },
+  { label: "Home", path: "/" },
+  { label: "Over Lionitas", path: "/over-lionitas" },
+  { label: "Actueel", path: "/actueel" },
+  { label: "Trainingen", path: "/trainingen" },
+  { label: "Contact", path: "/contact" },
 ];
 
 // Verticale positie (in px vanaf de viewport-top) waarop we peilen welke sectie
@@ -79,14 +83,14 @@ export default function Header() {
     };
   }, [menuOpen]);
 
-  const isLinkActive = (href: string) => (href === "/" ? pathname === "/" : pathname.startsWith(href));
+  const isLinkActive = (path: string) => (path === "/" ? pathname === "/" : pathname.startsWith(path));
 
   const renderMobileNavLink = (link: (typeof NAV_LINKS)[number]) => {
-    const isActive = isLinkActive(link.href);
+    const isActive = isLinkActive(link.path);
     return (
       <Link
-        key={link.href}
-        href={link.href}
+        key={link.label}
+        href="#"
         aria-current={isActive ? "page" : undefined}
         onClick={() => setMenuOpen(false)}
         className={`block rounded-sm py-3 text-lg transition focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-yellow ${
@@ -121,15 +125,15 @@ export default function Header() {
             onMouseLeave={() => setHoveredHref(null)}
           >
             {NAV_LINKS.map((link) => {
-              const isActive = isLinkActive(link.href);
-              const showPill = (hoveredHref ?? (isActive ? link.href : null)) === link.href;
+              const isActive = isLinkActive(link.path);
+              const showPill = (hoveredHref ?? (isActive ? link.path : null)) === link.path;
               return (
                 <Link
-                  key={link.href}
-                  href={link.href}
+                  key={link.label}
+                  href="#"
                   aria-current={isActive ? "page" : undefined}
-                  onMouseEnter={() => setHoveredHref(link.href)}
-                  onFocus={() => setHoveredHref(link.href)}
+                  onMouseEnter={() => setHoveredHref(link.path)}
+                  onFocus={() => setHoveredHref(link.path)}
                   onBlur={() => setHoveredHref(null)}
                   className={`relative rounded-pill px-4 py-2 text-meta whitespace-nowrap transition-colors focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-yellow ${
                     showPill ? "text-navy" : "text-on-dark"

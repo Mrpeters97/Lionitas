@@ -3,19 +3,16 @@
 import { useRef, type RefObject } from "react";
 import Image from "next/image";
 import Link from "next/link";
+import { ArrowRight } from "lucide-react";
 import { motion, useInView, useReducedMotion } from "framer-motion";
 import type { ContentCard } from "@/lib/wordpress";
-import { ArrowIcon, PILL_STYLES } from "@/components/PillLink";
 import { useCardSliderInView } from "@/components/CardSlider";
 import { useTouchLayout } from "@/lib/useTouchLayout";
 
 const spring = { type: "spring" as const, stiffness: 280, damping: 28 };
 
-// `revealed` = de statische eindstaat voor touch-apparaten (geen hover): de pill en
-// titel staan meteen in beeld, maar de afbeelding zoomt niet permanent in.
 const imageVariants = {
   rest: { scale: 1 },
-  revealed: { scale: 1 },
   hover: { scale: 1.06 },
 };
 
@@ -24,39 +21,13 @@ const imageVariants = {
 // beeld scrolt (`inView`) wordt 'm gemount én tegelijk ingefade + ingeschoven.
 const cardEntranceVariants = {
   hidden: { opacity: 0, y: 28 },
-  rest: { opacity: 1, y: 0 },
-  revealed: { opacity: 1, y: 0 },
-  hover: { opacity: 1, y: 0 },
-};
-
-const captionVariants = {
-  rest: { y: 0 },
-  revealed: { y: 0 },
-  hover: { y: -4 },
-};
-
-// Invisible — only reserves layout space so the title shifts up correctly, without constraining the pill's travel distance.
-// `revealed` snapt zonder animatie in beeld: op touch is er geen intro nodig en een
-// height-animatie binnen de horizontale slider zou verticale overflow geven.
-const ctaSpacerVariants = {
-  rest: { height: 0, marginTop: 0 },
-  revealed: { height: 44, marginTop: 8, transition: { duration: 0 } },
-  hover: { height: 44, marginTop: 8 },
-};
-
-// The pill itself lives outside that spacer, positioned against the card's true edge, so it can travel in from
-// below the card entirely instead of being capped by the spacer's own (small) clipped height.
-const ctaPillVariants = {
-  rest: { y: 100, opacity: 0, transition: { duration: 0.15 } },
-  revealed: { y: 0, opacity: 1, transition: { duration: 0 } },
-  hover: { y: 0, opacity: 1, transition: { duration: 0.3, delay: 0.08 } },
+  visible: { opacity: 1, y: 0 },
 };
 
 const MotionLink = motion.create(Link);
 
 export default function HomeCard({ card, index = 0 }: { card: ContentCard; index?: number }) {
   const touchLayout = useTouchLayout();
-  const restState = touchLayout ? "revealed" : "rest";
   // Kleinere radius zolang de kaarten in de mobiele/tablet-slider staan (smaller,
   // dus 20px oogt daar te fors) — volle rounded-panel pas vanaf xl, waar de kaarten
   // in het grid ook echt groter worden.
@@ -76,6 +47,14 @@ export default function HomeCard({ card, index = 0 }: { card: ContentCard; index
   const inView = touchLayout ? sharedInView : individualInView;
   const reduceMotion = useReducedMotion();
 
+  // Stagger alleen op desktop (grid) — op touch (horizontale slider) juist alle drie
+  // tegelijk, zoals gevraagd.
+  const staggerDelay = touchLayout ? 0.15 : 0.15 + index * 0.15;
+  const entranceTransition = {
+    opacity: { duration: 0.7, delay: staggerDelay, ease: [0.22, 1, 0.36, 1] as const },
+    y: { duration: 0.7, delay: staggerDelay, ease: [0.22, 1, 0.36, 1] as const },
+  };
+
   const content = (
     <>
       {inView && card.image?.node && (
@@ -90,34 +69,29 @@ export default function HomeCard({ card, index = 0 }: { card: ContentCard; index
       )}
       <div className="absolute inset-0 bg-black/20" />
       <div className="absolute inset-0 bg-gradient-to-b from-transparent from-[37.5%] to-navy" />
-      <motion.div
-        variants={captionVariants}
-        transition={spring}
-        className="absolute inset-x-0 bottom-0 flex flex-col items-center p-8 text-center"
-      >
-        <h3 className="h4 text-on-dark">{card.title}</h3>
-        {card.link?.url && <motion.div variants={ctaSpacerVariants} transition={spring} aria-hidden className="w-px" />}
-      </motion.div>
-      {card.link?.url && (
-        <motion.div variants={ctaPillVariants} className="absolute inset-x-0 bottom-8 flex justify-center">
+
+      {/* Titel links, cirkel-pijl altijd zichtbaar rechts — i.p.v. een CTA-pill die
+          pas bij hover verscheen. De hele kaart is toch al de link, dus die pill voegde
+          geen functie toe, alleen een extra stap. Bij hover/focus vult de cirkel geel
+          in en draait de pijl mee (via de `group`-klasse op de kaart zelf) — puur een
+          CSS-kleurovergang, geen layout-animatie, dus geen sprongetjes meer. */}
+      <div className="absolute inset-x-0 bottom-0 flex items-center justify-between gap-4 p-8">
+        <h3 className="h4 min-w-0 flex-1 text-left text-on-dark">{card.title}</h3>
+        {card.link?.url && (
           <span
-            className={`inline-flex items-center gap-2.5 rounded-pill py-2.5 pl-5 pr-2.5 text-label ${PILL_STYLES.blue}`}
+            aria-hidden
+            className="flex h-11 w-11 shrink-0 items-center justify-center rounded-full bg-white/15 ring-1 ring-inset ring-white/30 backdrop-blur-sm transition-colors duration-300 ease-out group-hover:bg-accent group-hover:ring-accent group-focus-visible:bg-accent group-focus-visible:ring-accent"
           >
-            <span>{card.link.title || "Meer informatie"}</span>
-            <ArrowIcon variant="blue" />
+            <ArrowRight
+              size={16}
+              strokeWidth={1.75}
+              className="origin-center text-on-dark transition-transform duration-300 ease-out group-hover:-rotate-45 group-hover:text-navy group-focus-visible:-rotate-45 group-focus-visible:text-navy motion-reduce:transition-none"
+            />
           </span>
-        </motion.div>
-      )}
+        )}
+      </div>
     </>
   );
-
-  // Stagger alleen op desktop (grid) — op touch (horizontale slider) juist alle drie
-  // tegelijk, zoals gevraagd.
-  const staggerDelay = touchLayout ? 0.15 : 0.15 + index * 0.15;
-  const entranceTransition = {
-    opacity: { duration: 0.7, delay: staggerDelay, ease: [0.22, 1, 0.36, 1] as const },
-    y: { duration: 0.7, delay: staggerDelay, ease: [0.22, 1, 0.36, 1] as const },
-  };
 
   if (card.link?.url) {
     return (
@@ -127,7 +101,7 @@ export default function HomeCard({ card, index = 0 }: { card: ContentCard; index
         target={card.link.target ?? undefined}
         variants={cardEntranceVariants}
         initial={reduceMotion ? false : "hidden"}
-        animate={inView ? restState : "hidden"}
+        animate={inView ? "visible" : "hidden"}
         whileHover="hover"
         whileFocus="hover"
         transition={entranceTransition}
@@ -143,7 +117,7 @@ export default function HomeCard({ card, index = 0 }: { card: ContentCard; index
       ref={cardRef as RefObject<HTMLDivElement | null>}
       variants={cardEntranceVariants}
       initial={reduceMotion ? false : "hidden"}
-      animate={inView ? restState : "hidden"}
+      animate={inView ? "visible" : "hidden"}
       whileHover="hover"
       whileFocus="hover"
       transition={entranceTransition}

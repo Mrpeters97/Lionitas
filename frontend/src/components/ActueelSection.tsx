@@ -107,24 +107,41 @@ function ActueelCard({ post, index = 0 }: { post: WordPressPost; index?: number 
         className="absolute inset-0 rounded-[14px] backdrop-blur-md sm:rounded-[20px] xl:rounded-card"
       />
 
-      <motion.span
-        aria-hidden
-        variants={floodVariants}
-        transition={spring}
-        style={{ transformOrigin: "center" }}
-        className="absolute bottom-6 right-6 h-11 w-11 rounded-full bg-navy/80"
-      />
-
       <div className="relative flex h-full flex-col justify-between p-6">
-        <div className="flex flex-wrap gap-3">
-          <span className="rounded-pill bg-white px-3 py-1 text-meta text-navy">
-            {formatDate(post.date)}
-          </span>
-          {category && (
-            <span className="rounded-pill bg-white px-3 py-1 text-meta text-navy">{category}</span>
-          )}
+        {/* items-center i.p.v. beide los op top-6 zetten: de pills en de badge hebben
+            een verschillende eigen hoogte (29px vs 44px), dus alleen dezelfde top-offset
+            gaf niet dezelfde verticale middellijn. Nu staat de badge gewoon als vierde
+            flex-item in de rij en centreert flexbox 'm automatisch t.o.v. de pills. */}
+        <div className="flex items-center justify-between gap-3">
+          {/* `relative z-10`: de pills staan vóór de badge in de DOM, dus zonder
+              expliciete z-index zou de (ook positioned) badge hiernaast er als
+              latere sibling toch overheen winnen. */}
+          <div className="relative z-10 flex flex-wrap gap-3">
+            <span className="rounded-pill bg-white px-3 py-1 text-meta text-navy">
+              {formatDate(post.date)}
+            </span>
+            {category && (
+              <span className="rounded-pill bg-white px-3 py-1 text-meta text-navy">{category}</span>
+            )}
+          </div>
+          <div className="relative h-11 w-11 shrink-0">
+            <motion.span
+              aria-hidden
+              variants={floodVariants}
+              transition={spring}
+              style={{ transformOrigin: "center" }}
+              className="absolute inset-0 rounded-full bg-navy/80"
+            />
+            <span className="absolute inset-0 flex items-center justify-center">
+              <ArrowIcon variant="yellow" showCircle={false} />
+            </span>
+          </div>
         </div>
-        <div className="max-w-[85%]">
+        {/* `relative` (positioned, ook zonder eigen z-index) tilt dit boven de
+            titel uit als die zelf niet ook positioned is — vandaar hier ook
+            `relative` erbij, anders wint de badge-wrapper hierboven altijd,
+            ongeacht DOM-volgorde. */}
+        <div className="relative max-w-[85%]">
           <h3 className="text-card text-on-dark">{post.title}</h3>
           <motion.div variants={excerptVariants} transition={spring} className="overflow-hidden">
             <div
@@ -134,10 +151,6 @@ function ActueelCard({ post, index = 0 }: { post: WordPressPost; index?: number 
           </motion.div>
         </div>
       </div>
-
-      <span className="absolute bottom-6 right-6 flex h-11 w-11 items-center justify-center">
-        <ArrowIcon variant="yellow" showCircle={false} />
-      </span>
     </MotionLink>
   );
 }

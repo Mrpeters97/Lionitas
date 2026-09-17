@@ -148,8 +148,11 @@ export default async function Footer() {
 
           {/* Kolommen — rechts uitgelijnd, logo blijft links. Alleen op mobiel (onder
               de min-[560px]-omslag naar naast-elkaar) een lijntje tussen de rijen,
-              zelfde stijl als de divider helemaal onderaan. */}
-          <div className="flex flex-col gap-10 max-[559px]:divide-y max-[559px]:divide-accent/60 min-[560px]:flex-row min-[560px]:gap-x-14 lg:gap-x-20 xl:gap-x-28">
+              zelfde stijl als de divider helemaal onderaan. `divide-y` plaatst de rand
+              zelf tegen de bovenkant van het volgende blok — vandaar expliciet pt-6/pb-6
+              rondom elke rand (i.p.v. de flex-`gap`, die de rand juist uit het midden
+              zou duwen) zodat er evenveel ruimte boven én onder elke lijn staat. */}
+          <div className="flex flex-col max-[559px]:divide-y max-[559px]:divide-accent/60 max-[559px]:[&>*+*]:pt-6 max-[559px]:[&>*:not(:last-child)]:pb-6 min-[560px]:flex-row min-[560px]:gap-10 min-[560px]:gap-x-14 lg:gap-x-20 xl:gap-x-28">
             <div>
               <h2 className="text-label">Lionitas</h2>
               <address className="mt-4 flex flex-col gap-4 not-italic text-body">

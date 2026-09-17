@@ -68,28 +68,44 @@ export default function HomeCard({ card, index = 0 }: { card: ContentCard; index
         </motion.div>
       )}
       <div className="absolute inset-0 bg-black/20" />
-      <div className="absolute inset-0 bg-gradient-to-b from-transparent from-[37.5%] to-navy" />
+      {/* Op mobiel een lichtere, puur zwarte scrim — zelfde gradient als jessepeters.nl
+          op mobiel voor z'n kaarten gebruikt — die laat veel meer van de foto zelf
+          zien dan onze eigen navy-tint. Vanaf sm (waar de kaarten ook groter worden)
+          weer de bestaande, donkerdere merk-gradient. */}
+      <div
+        className="absolute inset-0 sm:hidden"
+        style={{
+          backgroundImage:
+            "linear-gradient(to bottom, rgba(0,0,0,0.1) 0%, rgba(0,0,0,0.28) 48%, rgba(0,0,0,0.66) 100%)",
+        }}
+      />
+      <div className="absolute inset-0 hidden bg-gradient-to-b from-transparent from-[37.5%] to-navy sm:block" />
 
-      {/* Titel links, cirkel-pijl altijd zichtbaar rechts — i.p.v. een CTA-pill die
-          pas bij hover verscheen. De hele kaart is toch al de link, dus die pill voegde
-          geen functie toe, alleen een extra stap. Bij hover/focus vult de cirkel geel
-          in en draait de pijl mee (via de `group`-klasse op de kaart zelf) — puur een
-          CSS-kleurovergang, geen layout-animatie, dus geen sprongetjes meer. */}
-      <div className="absolute inset-x-0 bottom-0 flex items-center justify-between gap-4 p-8">
-        <h3 className="h4 min-w-0 flex-1 text-left text-on-dark">{card.title}</h3>
-        {card.link?.url && (
-          <span
-            aria-hidden
-            className="flex h-11 w-11 shrink-0 items-center justify-center rounded-full bg-white/15 ring-1 ring-inset ring-white/30 backdrop-blur-sm transition-colors duration-300 ease-out group-hover:bg-accent group-hover:ring-accent group-focus-visible:bg-accent group-focus-visible:ring-accent"
-          >
-            <ArrowRight
-              size={16}
-              strokeWidth={1.75}
-              className="origin-center text-on-dark transition-transform duration-300 ease-out group-hover:-rotate-45 group-hover:text-navy group-focus-visible:-rotate-45 group-focus-visible:text-navy motion-reduce:transition-none"
-            />
-          </span>
-        )}
+      {/* Titel links, cirkel-pijl altijd rechtsonder in de hoek — vast gepositioneerd
+          t.o.v. de kaart zelf (niet meer als flex-item náást de titel), zodat 'm altijd
+          op precies dezelfde plek staat, ook als de titel naar 2 regels wrapt i.p.v. mee
+          te centreren met de teksthoogte. `pr-*` op de titel reserveert de ruimte ernaast
+          zodat de tekst er nooit onder doorloopt. I.p.v. een CTA-pill die pas bij hover
+          verscheen: de hele kaart is toch al de link, dus die pill voegde geen functie
+          toe. Bij hover/focus vult de cirkel geel in en draait de pijl mee (via de
+          `group`-klasse op de kaart zelf) — puur een CSS-kleurovergang. Minder padding
+          dan een "gewone" kaart-rand (ook op desktop bewust krap) zodat titel en knop
+          dicht tegen de onderrand zitten. Op mobiel dezelfde tekstgrootte als de
+          Actueel-kaarten (`text-card`) — groter dan h4's eigen mobiele ondergrens. */}
+      <div className="absolute inset-x-0 bottom-0 p-4 pr-14 sm:p-6 sm:pr-16">
+        <h3 className="h4 text-card text-left text-on-dark sm:text-h4">{card.title}</h3>
       </div>
+      {card.link?.url && (
+        <span
+          aria-hidden
+          className="absolute bottom-4 right-4 flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-navy/80 ring-1 ring-inset ring-white/10 backdrop-blur-sm transition-colors duration-300 ease-out group-hover:bg-accent group-hover:ring-accent group-focus-visible:bg-accent group-focus-visible:ring-accent sm:bottom-6 sm:right-6 sm:h-9 sm:w-9"
+        >
+          <ArrowRight
+            strokeWidth={1.75}
+            className="h-3 w-3 origin-center text-on-dark transition-transform duration-300 ease-out group-hover:-rotate-45 group-hover:text-navy group-focus-visible:-rotate-45 group-focus-visible:text-navy motion-reduce:transition-none sm:h-3.5 sm:w-3.5"
+          />
+        </span>
+      )}
     </>
   );
 

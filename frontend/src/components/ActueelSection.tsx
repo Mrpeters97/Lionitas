@@ -3,9 +3,9 @@
 import { useRef } from "react";
 import Image from "next/image";
 import Link from "next/link";
+import { ArrowRight } from "lucide-react";
 import { motion, useInView, useReducedMotion } from "framer-motion";
 import type { WordPressPost } from "@/lib/wordpress";
-import { ArrowIcon } from "@/components/PillLink";
 import CardSlider, { useCardSliderInView } from "@/components/CardSlider";
 import { useTouchLayout } from "@/lib/useTouchLayout";
 
@@ -37,11 +37,14 @@ const blurVariants = {
   hover: { opacity: 1 },
 };
 
-// The color wash still blooms from the corner badge via transform: scale, same as the
-// original design — this part never had a blur on it, so scaling it is fine.
-const floodVariants = {
-  rest: { scale: 1 },
-  hover: { scale: 30 },
+// `backdrop-blur` samples pixels from just outside the card's own rounded corners too,
+// which without a color layer on top left a pale halo bleeding in there on hover (the
+// soft page background showing through). This solid navy wash sits above the blur and
+// covers that edge completely, and gives the white text proper contrast against busy/
+// light photos.
+const washVariants = {
+  rest: { opacity: 0 },
+  hover: { opacity: 1 },
 };
 
 const excerptVariants = {
@@ -106,42 +109,26 @@ function ActueelCard({ post, index = 0 }: { post: WordPressPost; index?: number 
         transition={spring}
         className="absolute inset-0 rounded-[14px] backdrop-blur-md sm:rounded-[20px] xl:rounded-card"
       />
+      <motion.div
+        aria-hidden
+        variants={washVariants}
+        transition={spring}
+        className="absolute inset-0 rounded-[14px] bg-navy/80 sm:rounded-[20px] xl:rounded-card"
+      />
 
       <div className="relative flex h-full flex-col justify-between p-6">
-        {/* items-center i.p.v. beide los op top-6 zetten: de pills en de badge hebben
-            een verschillende eigen hoogte (29px vs 44px), dus alleen dezelfde top-offset
-            gaf niet dezelfde verticale middellijn. Nu staat de badge gewoon als vierde
-            flex-item in de rij en centreert flexbox 'm automatisch t.o.v. de pills. */}
-        <div className="flex items-center justify-between gap-3">
-          {/* `relative z-10`: de pills staan vóór de badge in de DOM, dus zonder
-              expliciete z-index zou de (ook positioned) badge hiernaast er als
-              latere sibling toch overheen winnen. */}
-          <div className="relative z-10 flex flex-wrap gap-3">
-            <span className="rounded-pill bg-white px-3 py-1 text-meta text-navy">
-              {formatDate(post.date)}
-            </span>
-            {category && (
-              <span className="rounded-pill bg-white px-3 py-1 text-meta text-navy">{category}</span>
-            )}
-          </div>
-          <div className="relative h-11 w-11 shrink-0">
-            <motion.span
-              aria-hidden
-              variants={floodVariants}
-              transition={spring}
-              style={{ transformOrigin: "center" }}
-              className="absolute inset-0 rounded-full bg-navy/80"
-            />
-            <span className="absolute inset-0 flex items-center justify-center">
-              <ArrowIcon variant="yellow" showCircle={false} />
-            </span>
-          </div>
+        <div className="flex flex-wrap gap-3">
+          <span className="rounded-pill bg-white px-3 py-1 text-meta text-navy">
+            {formatDate(post.date)}
+          </span>
+          {category && (
+            <span className="rounded-pill bg-white px-3 py-1 text-meta text-navy">{category}</span>
+          )}
         </div>
-        {/* `relative` (positioned, ook zonder eigen z-index) tilt dit boven de
-            titel uit als die zelf niet ook positioned is — vandaar hier ook
-            `relative` erbij, anders wint de badge-wrapper hierboven altijd,
-            ongeacht DOM-volgorde. */}
-        <div className="relative max-w-[85%]">
+        {/* `pr-14`: ruimte voor de badge, die hieronder los (niet als flex-item) op
+            een vaste plek rechtsonder in de kaart staat — zie de toelichting bij
+            HomeCard voor waarom (blijft zo op dezelfde plek, ook als de titel wrapt). */}
+        <div className="pr-14">
           <h3 className="text-card text-on-dark">{post.title}</h3>
           <motion.div variants={excerptVariants} transition={spring} className="overflow-hidden">
             <div
@@ -151,6 +138,20 @@ function ActueelCard({ post, index = 0 }: { post: WordPressPost; index?: number 
           </motion.div>
         </div>
       </div>
+
+      {/* Cirkel-pijl altijd rechtsonder in de hoek, vast t.o.v. de kaart — zelfde
+          plek en styling als bij de eerste-drie-kaarten op de home. Donkere vulling
+          i.p.v. het eerdere lichte glas-effect: een bijna-transparant wit vlak gaf de
+          witte pijl te weinig contrast om goed leesbaar te zijn. */}
+      <span
+        aria-hidden
+        className="absolute bottom-6 right-6 flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-navy/80 ring-1 ring-inset ring-white/10 backdrop-blur-sm transition-colors duration-300 ease-out group-hover:bg-accent group-hover:ring-accent group-focus-visible:bg-accent group-focus-visible:ring-accent sm:h-9 sm:w-9"
+      >
+        <ArrowRight
+          strokeWidth={1.75}
+          className="h-3 w-3 origin-center text-on-dark transition-transform duration-300 ease-out group-hover:-rotate-45 group-hover:text-navy group-focus-visible:-rotate-45 group-focus-visible:text-navy motion-reduce:transition-none sm:h-3.5 sm:w-3.5"
+        />
+      </span>
     </MotionLink>
   );
 }

@@ -6,7 +6,8 @@ import { usePathname } from "next/navigation";
 import { AnimatePresence, MotionConfig, motion } from "framer-motion";
 import { ArrowUpRight, ChevronDown, ChevronLeft, ChevronRight, Menu, X } from "lucide-react";
 import PillLink from "@/components/PillLink";
-import MegaMenu, { ACTIVE_LINK, MORPH, MorphPanel, NavAnchor } from "@/components/MegaMenu";
+import MegaMenu, { MORPH, MorphPanel, NavAnchor } from "@/components/MegaMenu";
+import { NavIcon } from "@/lib/navIcons";
 import { HEADER_CTA, isItemActive, type NavItem } from "@/lib/navigation";
 import { useTouchLayout } from "@/lib/useTouchLayout";
 
@@ -30,6 +31,12 @@ const RADIUS_OPEN = 32;
 // "uitglijder" over de rand het paneel niet meteen dichtklapt.
 const CLOSE_DELAY = 140;
 
+// "Hover intent": staat er al een paneel open, dan wisselt het pas naar een ander
+// hoofditem (of sluit het via logo/CTA/item zonder submenu) als de muis daar even
+// blijft. Anders springt het paneel heen en weer zodra je schuin naar een subitem
+// beweegt en onderweg een buur-item raakt, of snel over de balk veegt.
+const SWITCH_DELAY = 120;
+
 export default function Header({ navigation }: { navigation: NavItem[] }) {
   const pathname = usePathname();
   const isTouch = useTouchLayout();
@@ -50,6 +57,7 @@ export default function Header({ navigation }: { navigation: NavItem[] }) {
   const triggerRefs = useRef<Record<string, HTMLElement | null>>({});
   const ctaRef = useRef<HTMLDivElement>(null);
   const closeTimer = useRef<number | undefined>(undefined);
+  const switchTimer = useRef<number | undefined>(undefined);
 
   // Alles is gekeyed op `id` (WordPress menu-item-ID): `href` kan null zijn ("#").
   const sectionIndex = (id: string) => navigation.findIndex((s) => s.id === id);
@@ -113,10 +121,17 @@ export default function Header({ navigation }: { navigation: NavItem[] }) {
     return () => window.removeEventListener("keydown", onKeyDown);
   });
 
-  useEffect(() => () => window.clearTimeout(closeTimer.current), []);
+  useEffect(
+    () => () => {
+      window.clearTimeout(closeTimer.current);
+      window.clearTimeout(switchTimer.current);
+    },
+    [],
+  );
 
   function closeAll() {
     window.clearTimeout(closeTimer.current);
+    window.clearTimeout(switchTimer.current);
     setOpenId(null);
     setHoverId(null);
     setMenuOpen(false);
@@ -125,13 +140,31 @@ export default function Header({ navigation }: { navigation: NavItem[] }) {
 
   function openPanel(id: string | null) {
     window.clearTimeout(closeTimer.current);
+    window.clearTimeout(switchTimer.current);
     if (id && openId && id !== openId) setDirection(sectionIndex(id) > sectionIndex(openId) ? 1 : -1);
     else if (!openId) setDirection(0);
     setOpenId(id);
   }
 
+  function cancelSwitch() {
+    window.clearTimeout(switchTimer.current);
+  }
+
+  /** Muis op een hoofditem, het logo of de CTA (`panelId` null = geen paneel). Zie SWITCH_DELAY. */
+  function hoverTrigger(id: string | null, panelId: string | null) {
+    if (isTouch) return;
+    cancelSwitch();
+    const apply = () => {
+      setHoverId(id);
+      openPanel(panelId);
+    };
+    if (openId && panelId !== openId) switchTimer.current = window.setTimeout(apply, SWITCH_DELAY);
+    else apply();
+  }
+
   function scheduleClose() {
     window.clearTimeout(closeTimer.current);
+    window.clearTimeout(switchTimer.current);
     closeTimer.current = window.setTimeout(() => {
       setOpenId(null);
       setHoverId(null);
@@ -228,7 +261,8 @@ export default function Header({ navigation }: { navigation: NavItem[] }) {
           <div className="flex items-center justify-between gap-4 py-3 pl-5 pr-4 xl:py-5 xl:pl-[30px] xl:pr-5">
             <Link
               href="/"
-              onMouseEnter={() => !isTouch && (openPanel(null), setHoverId(null))}
+              onMouseEnter={() => hoverTrigger(null, null)}
+              onMouseLeave={cancelSwitch}
               className="shrink-0 focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-yellow"
             >
               {/* eslint-disable-next-line @next/next/no-img-element */}
@@ -246,11 +280,7 @@ export default function Header({ navigation }: { navigation: NavItem[] }) {
                 const setRef = (el: HTMLElement | null) => {
                   triggerRefs.current[section.id] = el;
                 };
-                const onMouseEnter = () => {
-                  if (isTouch) return;
-                  setHoverId(section.id);
-                  openPanel(hasChildren ? section.id : null);
-                };
+                const onMouseEnter = () => hoverTrigger(section.id, hasChildren ? section.id : null);
                 const content = (
                   <>
                     {showPill && (
@@ -281,12 +311,13 @@ export default function Header({ navigation }: { navigation: NavItem[] }) {
                       href={section.href}
                       aria-current={pathname === section.href ? "page" : undefined}
                       onMouseEnter={onMouseEnter}
+                      onMouseLeave={cancelSwitch}
                       className={className}
                     >
                       {content}
                     </Link>
                   ) : (
-                    <span key={section.id} onMouseEnter={onMouseEnter} className={className}>
+                    <span key={section.id} onMouseEnter={onMouseEnter} onMouseLeave={cancelSwitch} className={className}>
                       {content}
                     </span>
                   );
@@ -305,6 +336,7 @@ export default function Header({ navigation }: { navigation: NavItem[] }) {
                       aria-controls="mega-panel"
                       aria-current={pathname === section.href ? "page" : undefined}
                       onMouseEnter={onMouseEnter}
+                      onMouseLeave={cancelSwitch}
                       onKeyDown={(event) => onTriggerKeyDown(event, section)}
                       onClick={(event) => {
                         if (isTouch && !isOpen) {
@@ -328,6 +360,7 @@ export default function Header({ navigation }: { navigation: NavItem[] }) {
                     aria-expanded={isOpen}
                     aria-controls="mega-panel"
                     onMouseEnter={onMouseEnter}
+                    onMouseLeave={cancelSwitch}
                     onKeyDown={(event) => onTriggerKeyDown(event, section)}
                     onClick={(event) => {
                       // Muisklik terwijl hover 'm al opende → open laten (anders klapt een
@@ -350,7 +383,8 @@ export default function Header({ navigation }: { navigation: NavItem[] }) {
               <div
                 ref={ctaRef}
                 className="hidden xl:block"
-                onMouseEnter={() => !isTouch && (openPanel(null), setHoverId(null))}
+                onMouseEnter={() => hoverTrigger(null, null)}
+                onMouseLeave={cancelSwitch}
               >
                 <PillLink href={HEADER_CTA.href} variant="yellow">
                   {HEADER_CTA.label}
@@ -450,7 +484,7 @@ function MobileRoot({
     <>
       <ul className="flex flex-col divide-y divide-white/10">
         {navigation.map((section) => {
-          const color = `text-on-dark ${isItemActive(pathname, section) ? ACTIVE_LINK : "underline-offset-[6px] hover:underline"}`;
+          const color = "text-on-dark underline-offset-[6px] hover:underline";
           return (
             <li key={section.id}>
               {section.children.length > 0 ? (
@@ -493,7 +527,7 @@ function MobileSection({
   onNavigate: () => void;
 }) {
   const linkClass =
-    "-mx-3 block rounded-panel px-3 py-2.5 transition-colors focus-visible:outline-2 focus-visible:outline-yellow";
+    "-mx-3 flex items-start gap-3 rounded-panel px-3 py-2.5 transition-colors focus-visible:outline-2 focus-visible:outline-yellow";
 
   return (
     <>
@@ -525,15 +559,18 @@ function MobileSection({
                 onNavigate={onNavigate}
                 className={`${linkClass} ${child.href ? "hover:bg-blue-hover" : ""}`}
               >
-                <span className={`flex items-center gap-1.5 text-label text-on-dark ${active ? ACTIVE_LINK : ""}`}>
-                  {child.label}
-                  {child.external && (
-                    <ArrowUpRight aria-hidden size={15} strokeWidth={2} className="text-on-dark" />
+                <NavIcon link={child} />
+                <span className="min-w-0 flex-1">
+                  <span className="flex items-center gap-1.5 text-label text-on-dark">
+                    {child.label}
+                    {child.external && (
+                      <ArrowUpRight aria-hidden size={15} strokeWidth={2} className="text-on-dark" />
+                    )}
+                  </span>
+                  {child.description && (
+                    <span className="mt-0.5 block text-meta text-on-dark">{child.description}</span>
                   )}
                 </span>
-                {child.description && (
-                  <span className="mt-0.5 block text-meta text-on-dark">{child.description}</span>
-                )}
               </NavAnchor>
               {child.children.length > 0 && (
                 <ul className="mb-1 flex flex-col border-l border-white/15 pl-3">
@@ -543,9 +580,7 @@ function MobileSection({
                         link={grandchild}
                         active={pathname === grandchild.href}
                         onNavigate={onNavigate}
-                        className={`block rounded-sm py-1.5 text-meta text-on-dark underline-offset-4 hover:underline focus-visible:outline-2 focus-visible:outline-yellow ${
-                          pathname === grandchild.href ? ACTIVE_LINK : ""
-                        }`}
+                        className="block rounded-sm py-1.5 text-meta text-on-dark underline-offset-4 hover:underline focus-visible:outline-2 focus-visible:outline-yellow"
                       >
                         {grandchild.label}
                       </NavAnchor>

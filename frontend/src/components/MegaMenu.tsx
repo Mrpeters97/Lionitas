@@ -4,6 +4,7 @@ import { useEffect, useRef, useState } from "react";
 import Link from "next/link";
 import { AnimatePresence, motion, type Transition, type Variants } from "framer-motion";
 import { ArrowRight, ArrowUpRight } from "lucide-react";
+import { NavIcon } from "@/lib/navIcons";
 import type { NavItem } from "@/lib/navigation";
 
 // Gedeelde "morph"-beweging voor de header: de blauwe pill vouwt open tot paneel.
@@ -80,9 +81,8 @@ export function MorphPanel({
 
 // Contrast op blauw (#0a71b4, zie WCAG-notitie in CLAUDE.md): alle tekst is wit
 // (5.2:1) — wit 75% (3.6:1) en geel (4.3:1) halen de 4.5:1 voor normale tekst niet.
-// Hover-tegels worden dónkerder (blue-hover: wit 6.7:1), niet lichter. Actief = wit
-// met gele onderstreping; die streep is geen tekst, dus 3:1 volstaat.
-export const ACTIVE_LINK = "underline decoration-yellow decoration-2 underline-offset-[6px]";
+// Hover-tegels worden dónkerder (blue-hover: wit 6.7:1), niet lichter. De huidige pagina
+// krijgt bewust geen eigen stijl (klantwens); alleen `aria-current="page"`.
 
 /** Desktop-inhoud van één hoofditem: titel links (linkt als het hoofditem klikbaar is), subpagina's in twee kolommen rechts. */
 export default function MegaMenu({ section, pathname }: { section: NavItem; pathname: string }) {
@@ -111,9 +111,7 @@ export default function MegaMenu({ section, pathname }: { section: NavItem; path
                     <NavAnchor
                       link={grandchild}
                       active={pathname === grandchild.href}
-                      className={`block rounded-sm px-4 py-1.5 text-meta text-on-dark underline-offset-4 hover:underline focus-visible:outline-2 focus-visible:outline-yellow ${
-                        pathname === grandchild.href ? ACTIVE_LINK : ""
-                      }`}
+                      className="block rounded-sm px-4 py-1.5 text-meta text-on-dark underline-offset-4 hover:underline focus-visible:outline-2 focus-visible:outline-yellow"
                     >
                       {grandchild.label}
                     </NavAnchor>
@@ -170,8 +168,9 @@ function MegaLink({ link, active }: { link: NavItem; active: boolean }) {
         link.href ? "hover:bg-blue-hover" : ""
       }`}
     >
+      <NavIcon link={link} />
       <span className="flex-1">
-        <span className={`flex items-center gap-1.5 text-label text-on-dark ${active ? ACTIVE_LINK : ""}`}>
+        <span className="flex items-center gap-1.5 text-label text-on-dark">
           {link.label}
           {link.external && <ArrowUpRight aria-hidden size={15} strokeWidth={2} className="text-on-dark" />}
         </span>

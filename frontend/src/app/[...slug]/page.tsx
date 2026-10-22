@@ -9,7 +9,7 @@ import { getNavigation } from "@/lib/wordpress";
 
 // Vangt alle menu-paden (uit het WordPress-menu) op die (nog) geen eigen route hebben:
 // - item met subpagina's → overzicht met kaarten naar die subpagina's
-// - item zonder subpagina's → "in de maak"-pagina met de rest van de sectie
+// - item zonder subpagina's → "in de maak"-pagina
 // Zodra een pagina een eigen map krijgt (zoals over-lionitas/clubrecords) wint die
 // route automatisch. Paden die niet in het menu staan → 404. Nieuwe menu-items uit
 // WordPress worden on-demand gerenderd (dynamicParams staat standaard aan).
@@ -39,12 +39,10 @@ export async function generateMetadata({ params }: PageProps<"/[...slug]">): Pro
 export default async function NavPage({ params }: PageProps<"/[...slug]">) {
   const trail = await resolve(params);
   const page = trail.at(-1)!;
-  const parent = trail.at(-2);
   const breadcrumbs = trail.map((entry, index) => ({
     label: entry.label,
     href: index < trail.length - 1 ? entry.href : null,
   }));
-  const siblings = (parent?.children ?? []).filter((child) => child.id !== page.id);
 
   return (
     <div className="flex flex-col">
@@ -61,21 +59,7 @@ export default async function NavPage({ params }: PageProps<"/[...slug]">) {
             ))}
           </ul>
         ) : (
-          <>
-            <UnderConstruction />
-            {parent && siblings.length > 0 && (
-              <div className="mt-section">
-                <h2 className="h3">Meer in {parent.label}</h2>
-                <ul className="mt-8 grid gap-5 md:grid-cols-2 xl:grid-cols-3">
-                  {siblings.map((child) => (
-                    <li key={child.id}>
-                      <NavCard link={child} />
-                    </li>
-                  ))}
-                </ul>
-              </div>
-            )}
-          </>
+          <UnderConstruction />
         )}
       </Section>
     </div>

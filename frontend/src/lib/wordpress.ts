@@ -320,6 +320,21 @@ export async function getSiteSettings(): Promise<SiteSettings> {
     }
   `;
 
-  const data = await fetchGraphQL<{ page: { siteSettings: SiteSettings } }>(query);
-  return data.page.siteSettings;
+  // De footer staat op elke pagina (ook /_not-found): een haperend WordPress mag dan niet
+  // de hele build of render laten vallen, dus terugvallen op de bekende gegevens.
+  try {
+    const data = await fetchGraphQL<{ page: { siteSettings: SiteSettings | null } | null }>(query);
+    return data.page?.siteSettings ?? FALLBACK_SITE_SETTINGS;
+  } catch {
+    return FALLBACK_SITE_SETTINGS;
+  }
 }
+
+const FALLBACK_SITE_SETTINGS: SiteSettings = {
+  contact: {
+    address: "Middelzeelaan 20, 8931 AK Leeuwarden",
+    phone: "058 289 8079",
+    email: "info@lionitas.nl",
+  },
+  social: { facebookUrl: null, instagramUrl: null, linkedinUrl: null },
+};

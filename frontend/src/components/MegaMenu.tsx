@@ -84,7 +84,7 @@ export function MorphPanel({
 // met gele onderstreping; die streep is geen tekst, dus 3:1 volstaat.
 export const ACTIVE_LINK = "underline decoration-yellow decoration-2 underline-offset-[6px]";
 
-/** Desktop-inhoud van één hoofditem: titel + omschrijving links, subpagina's in twee kolommen rechts. */
+/** Desktop-inhoud van één hoofditem: titel links (linkt als het hoofditem klikbaar is), subpagina's in twee kolommen rechts. */
 export default function MegaMenu({ section, pathname }: { section: NavItem; pathname: string }) {
   return (
     <div data-panel={section.id} className="grid grid-cols-[minmax(0,17rem)_1fr] gap-10 pb-8 pt-6">
@@ -92,20 +92,13 @@ export default function MegaMenu({ section, pathname }: { section: NavItem; path
         {section.href ? (
           <Link
             href={section.href}
-            className="group inline-flex items-center gap-2 rounded-sm text-on-dark transition-colors hover:text-yellow focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-yellow"
+            className="h4 rounded-sm text-on-dark decoration-yellow decoration-2 underline-offset-[6px] hover:underline focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-yellow"
           >
-            <span className="h4 text-current">{section.label}</span>
-            <ArrowRight
-              aria-hidden
-              size={20}
-              strokeWidth={2.25}
-              className="shrink-0 text-yellow transition-transform duration-200 group-hover:translate-x-1 motion-reduce:transition-none"
-            />
+            {section.label}
           </Link>
         ) : (
           <p className="h4 text-on-dark">{section.label}</p>
         )}
-        {section.description && <p className="mt-3 text-body text-on-dark">{section.description}</p>}
       </div>
       <ul className="grid grid-cols-2 content-start gap-1">
         {section.children.map((child) => (

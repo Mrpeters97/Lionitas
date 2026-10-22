@@ -1,10 +1,12 @@
 "use client";
 
-import { useDeferredValue, useEffect, useId, useMemo, useState } from "react";
-import { motion } from "framer-motion";
-import { ChevronDown, Search, X } from "lucide-react";
+import { useDeferredValue, useEffect, useId, useMemo, useRef, useState } from "react";
+import { AnimatePresence, MotionConfig, motion, useReducedMotion } from "framer-motion";
+import { useLenis } from "lenis/react";
+import { ChevronDown, Search, SlidersHorizontal, X } from "lucide-react";
 import {
   AGE_GROUPS,
+  type AgeGroup,
   DISCIPLINES,
   type ClubRecord,
   type Discipline,
@@ -22,6 +24,8 @@ interface Filters {
   discipline: "all" | Discipline;
   query: string;
 }
+
+type CategoryGroup = { value: AgeGroup; label: string; categories: string[] };
 
 const DEFAULT_FILTERS: Filters = { venue: "outdoor", gender: "all", category: "all", discipline: "all", query: "" };
 
@@ -55,6 +59,9 @@ function writeFiltersToUrl(filters: Filters) {
   const search = params.toString();
   window.history.replaceState(null, "", search ? `?${search}` : window.location.pathname);
 }
+
+/** Hoogte van de vaste header (= `scroll-padding-top` op <html>). */
+const headerSpace = () => Number.parseFloat(getComputedStyle(document.documentElement).scrollPaddingTop) || 0;
 
 const dateFormat = new Intl.DateTimeFormat("nl-NL", { day: "numeric", month: "short", year: "numeric", timeZone: "UTC" });
 const formatDate = (date: string | null) => (date ? dateFormat.format(new Date(`${date}T00:00:00Z`)) : null);
@@ -113,6 +120,41 @@ export default function ClubrecordsExplorer({
 }) {
   const [filters, setFilters] = useState<Filters>(DEFAULT_FILTERS);
   const deferredQuery = useDeferredValue(filters.query.trim());
+  const panelRef = useRef<HTMLDivElement>(null);
+  const resultsRef = useRef<HTMLDivElement>(null);
+  const [showFloating, setShowFloating] = useState(false);
+  const [floatingOpen, setFloatingOpen] = useState(false);
+  const lenis = useLenis();
+  const reduceMotion = useReducedMotion();
+
+  // Zwevende filterknop: zichtbaar zodra het filterpaneel onder de header is weggescrold,
+  // zolang er nog resultaten in beeld zijn (niet meer bij het contactblok/de footer).
+  useEffect(() => {
+    let frame = 0;
+    const measure = () => {
+      frame = 0;
+      const panel = panelRef.current;
+      const results = resultsRef.current;
+      if (!panel || !results) return;
+      const visible =
+        panel.getBoundingClientRect().bottom < headerSpace() &&
+        results.getBoundingClientRect().bottom > window.innerHeight * 0.5;
+      setShowFloating(visible);
+      // Weer bij het grote paneel: niet twee filtersets tegelijk open.
+      if (!visible) setFloatingOpen(false);
+    };
+    const onScroll = () => {
+      if (!frame) frame = requestAnimationFrame(measure);
+    };
+    measure();
+    window.addEventListener("scroll", onScroll, { passive: true });
+    window.addEventListener("resize", onScroll);
+    return () => {
+      cancelAnimationFrame(frame);
+      window.removeEventListener("scroll", onScroll);
+      window.removeEventListener("resize", onScroll);
+    };
+  }, []);
 
   // De URL is pas na mount beschikbaar (de pagina zelf is statisch).
   useEffect(() => {
@@ -170,110 +212,46 @@ export default function ClubrecordsExplorer({
   const recordCount = groups.reduce((sum, group) => sum + group.rows.length, 0);
   const isFiltered =
     filters.gender !== "all" || category !== "all" || filters.discipline !== "all" || filters.query.trim() !== "";
+  const activeCount = [filters.gender !== "all", category !== "all", filters.discipline !== "all", filters.query.trim() !== ""].filter(
+    Boolean,
+  ).length;
   const resetFilters = () => update({ gender: "all", category: "all", discipline: "all", query: "" });
+
+  /** Na een wijziging vanuit de zwevende filters: terug naar het begin van de resultaten (als je er voorbij bent). */
+  const scrollToResults = () => {
+    const results = resultsRef.current;
+    if (!results) return;
+    const space = headerSpace() + 16;
+    const top = results.getBoundingClientRect().top;
+    if (top >= space) return;
+    const target = window.scrollY + top - space;
+    if (lenis) lenis.scrollTo(target, { duration: reduceMotion ? 0 : 0.6, force: true });
+    else window.scrollTo({ top: target, behavior: reduceMotion ? "auto" : "smooth" });
+  };
+  const updateFromFloating = (patch: Partial<Filters>) => {
+    update(patch);
+    scrollToResults();
+  };
+
+  const summary = (
+    <>
+      <span className="font-semibold tabular-nums text-heading">{recordCount}</span>{" "}
+      {recordCount === 1 ? "record" : "records"} {filters.venue}
+    </>
+  );
 
   return (
     <div>
       {/* Filterpaneel — elk veld met een label, allemaal even hoog (h-12). */}
-      <div className="rounded-panel bg-surface shadow-[0_20px_50px_rgba(0,14,53,0.12)]">
+      <div ref={panelRef} className="rounded-panel bg-surface shadow-[0_20px_50px_rgba(0,14,53,0.12)]">
         <div className="grid grid-cols-[minmax(0,1fr)] gap-x-4 gap-y-5 p-5 sm:grid-cols-2 sm:p-6 lg:grid-cols-[auto_auto_minmax(0,1fr)] lg:p-8">
-          <Field label="Baan">
-            <Segmented
-              label="Baan"
-              layoutId="seg-venue"
-              value={filters.venue}
-              onChange={(venue) => update({ venue })}
-              options={[
-                { value: "outdoor", label: "Outdoor" },
-                { value: "indoor", label: "Indoor" },
-              ]}
-            />
-          </Field>
-          <Field label="Geslacht">
-            <Segmented
-              label="Geslacht"
-              layoutId="seg-gender"
-              value={filters.gender}
-              onChange={(gender) => update({ gender })}
-              options={[
-                { value: "all", label: "Iedereen" },
-                { value: "v", label: "Vrouwen" },
-                { value: "m", label: "Mannen" },
-              ]}
-            />
-          </Field>
-          <Field label="Zoeken" className="sm:col-span-2 lg:col-span-1">
-            {(id) => (
-              <div className="relative">
-                <Search
-                  aria-hidden
-                  size={18}
-                  strokeWidth={2}
-                  className="pointer-events-none absolute left-4 top-1/2 -translate-y-1/2 text-on-light-muted"
-                />
-                <input
-                  id={id}
-                  type="search"
-                  value={filters.query}
-                  onChange={(event) => update({ query: event.target.value })}
-                  placeholder="Naam of onderdeel"
-                  className={`h-12 w-full rounded-pill bg-page pl-11 text-body ${filters.query ? "pr-11" : "pr-4"} text-foreground placeholder:text-on-light-muted focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-blue [&::-webkit-search-cancel-button]:hidden`}
-                />
-                {filters.query && (
-                  <button
-                    type="button"
-                    onClick={() => update({ query: "" })}
-                    aria-label="Zoekopdracht wissen"
-                    className="absolute right-2 top-1/2 flex h-8 w-8 -translate-y-1/2 items-center justify-center rounded-pill text-on-light-muted transition hover:bg-surface hover:text-heading focus-visible:outline-2 focus-visible:outline-blue"
-                  >
-                    <X aria-hidden size={16} strokeWidth={2} />
-                  </button>
-                )}
-              </div>
-            )}
-          </Field>
-          <Field label="Categorie" className="lg:col-span-2">
-            {(id) => (
-              <Select id={id} value={category} onChange={(value) => update({ category: value })}>
-                <option value="all">Alle categorieën</option>
-                {categoryGroups.map((group) => (
-                  <optgroup key={group.value} label={group.label}>
-                    {group.categories.length > 1 && (
-                      <option value={`group:${group.value}`}>Alle {group.label.toLowerCase()}</option>
-                    )}
-                    {group.categories.map((name) => (
-                      <option key={name} value={`cat:${name}`}>
-                        {name}
-                      </option>
-                    ))}
-                  </optgroup>
-                ))}
-              </Select>
-            )}
-          </Field>
-          <Field label="Onderdeel">
-            {(id) => (
-              <Select
-                id={id}
-                value={filters.discipline}
-                onChange={(value) => update({ discipline: value as Filters["discipline"] })}
-              >
-                <option value="all">Alle onderdelen</option>
-                {DISCIPLINES.map((d) => (
-                  <option key={d.value} value={d.value}>
-                    {d.label}
-                  </option>
-                ))}
-              </Select>
-            )}
-          </Field>
+          <FilterFields filters={filters} category={category} categoryGroups={categoryGroups} update={update} />
         </div>
 
         {/* Samenvatting — "Filters wissen" houdt altijd z'n plek (invisible), zodat er niets verspringt. */}
         <div className="flex items-center justify-between gap-4 border-t border-ink/10 px-5 py-4 sm:px-6 lg:px-8">
           <p className="whitespace-nowrap text-body text-on-light-muted" aria-live="polite">
-            <span className="font-semibold tabular-nums text-heading">{recordCount}</span>{" "}
-            {recordCount === 1 ? "record" : "records"} {filters.venue}
+            {summary}
           </p>
           <button
             type="button"
@@ -290,7 +268,7 @@ export default function ClubrecordsExplorer({
       </div>
 
       {/* Resultaten — min-hoogte zodat de pagina niet inklapt bij weinig resultaten. */}
-      <div className="mt-14 min-h-[60vh]">
+      <div ref={resultsRef} className="mt-14 min-h-[60vh]">
         {groups.length === 0 ? (
           <div className="rounded-panel bg-surface px-6 py-16 text-center">
             <p className="h4">Geen records gevonden</p>
@@ -318,7 +296,285 @@ export default function ClubrecordsExplorer({
           </div>
         )}
       </div>
+
+      <FloatingFilters
+        visible={showFloating}
+        open={floatingOpen}
+        onOpenChange={setFloatingOpen}
+        activeCount={activeCount}
+        summary={summary}
+        isFiltered={isFiltered}
+        onReset={() => {
+          resetFilters();
+          scrollToResults();
+        }}
+      >
+        <FilterFields
+          compact
+          filters={filters}
+          category={category}
+          categoryGroups={categoryGroups}
+          update={updateFromFloating}
+        />
+      </FloatingFilters>
     </div>
+  );
+}
+
+/** De filtervelden; `compact` = smallere, gestapelde variant voor de zwevende filters. */
+function FilterFields({
+  filters,
+  category,
+  categoryGroups,
+  update,
+  compact = false,
+}: {
+  filters: Filters;
+  category: string;
+  categoryGroups: CategoryGroup[];
+  update: (patch: Partial<Filters>) => void;
+  compact?: boolean;
+}) {
+  // Kolom-spans horen bij het grid van het grote paneel; in de gestapelde variant zouden ze
+  // impliciete extra kolommen maken.
+  const span = (className: string) => (compact ? "" : className);
+  const height = compact ? "h-11" : "h-12";
+  const idPrefix = compact ? "floating-" : "";
+
+  return (
+    <>
+      <Field label="Baan">
+        <Segmented
+          label="Baan"
+          layoutId={`${idPrefix}seg-venue`}
+          compact={compact}
+          value={filters.venue}
+          onChange={(venue) => update({ venue })}
+          options={[
+            { value: "outdoor", label: "Outdoor" },
+            { value: "indoor", label: "Indoor" },
+          ]}
+        />
+      </Field>
+      <Field label="Geslacht">
+        <Segmented
+          label="Geslacht"
+          layoutId={`${idPrefix}seg-gender`}
+          compact={compact}
+          value={filters.gender}
+          onChange={(gender) => update({ gender })}
+          options={[
+            { value: "all", label: "Iedereen" },
+            { value: "v", label: "Vrouwen" },
+            { value: "m", label: "Mannen" },
+          ]}
+        />
+      </Field>
+      <Field label="Zoeken" className={span("sm:col-span-2 lg:col-span-1")}>
+        {(id) => (
+          <div className="relative">
+            <Search
+              aria-hidden
+              size={18}
+              strokeWidth={2}
+              className="pointer-events-none absolute left-4 top-1/2 -translate-y-1/2 text-on-light-muted"
+            />
+            <input
+              id={id}
+              type="search"
+              value={filters.query}
+              onChange={(event) => update({ query: event.target.value })}
+              placeholder="Naam of onderdeel"
+              className={`${height} w-full rounded-pill bg-page pl-11 text-body ${filters.query ? "pr-11" : "pr-4"} text-foreground placeholder:text-on-light-muted focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-blue [&::-webkit-search-cancel-button]:hidden`}
+            />
+            {filters.query && (
+              <button
+                type="button"
+                onClick={() => update({ query: "" })}
+                aria-label="Zoekopdracht wissen"
+                className="absolute right-2 top-1/2 flex h-8 w-8 -translate-y-1/2 items-center justify-center rounded-pill text-on-light-muted transition hover:bg-surface hover:text-heading focus-visible:outline-2 focus-visible:outline-blue"
+              >
+                <X aria-hidden size={16} strokeWidth={2} />
+              </button>
+            )}
+          </div>
+        )}
+      </Field>
+      <Field label="Categorie" className={span("lg:col-span-2")}>
+        {(id) => (
+          <Select id={id} height={height} value={category} onChange={(value) => update({ category: value })}>
+            <option value="all">Alle categorieën</option>
+            {categoryGroups.map((group) => (
+              <optgroup key={group.value} label={group.label}>
+                {group.categories.length > 1 && (
+                  <option value={`group:${group.value}`}>Alle {group.label.toLowerCase()}</option>
+                )}
+                {group.categories.map((name) => (
+                  <option key={name} value={`cat:${name}`}>
+                    {name}
+                  </option>
+                ))}
+              </optgroup>
+            ))}
+          </Select>
+        )}
+      </Field>
+      <Field label="Onderdeel">
+        {(id) => (
+          <Select
+            id={id}
+            height={height}
+            value={filters.discipline}
+            onChange={(value) => update({ discipline: value as Filters["discipline"] })}
+          >
+            <option value="all">Alle onderdelen</option>
+            {DISCIPLINES.map((d) => (
+              <option key={d.value} value={d.value}>
+                {d.label}
+              </option>
+            ))}
+          </Select>
+        )}
+      </Field>
+    </>
+  );
+}
+
+/**
+ * Zwevende "Filters"-knop bij het scrollen: rechtsonder vanaf md, gecentreerd onderin op mobiel.
+ * Opent een compact paneel erboven (niet-modaal): Escape of klik ernaast sluit, focus gaat
+ * terug naar de knop.
+ */
+function FloatingFilters({
+  visible,
+  open,
+  onOpenChange,
+  activeCount,
+  summary,
+  isFiltered,
+  onReset,
+  children,
+}: {
+  visible: boolean;
+  open: boolean;
+  onOpenChange: (open: boolean) => void;
+  activeCount: number;
+  summary: React.ReactNode;
+  isFiltered: boolean;
+  onReset: () => void;
+  children: React.ReactNode;
+}) {
+  const rootRef = useRef<HTMLDivElement>(null);
+  const buttonRef = useRef<HTMLButtonElement>(null);
+  const dialogRef = useRef<HTMLDivElement>(null);
+  const dialogId = useId();
+  const titleId = useId();
+
+  useEffect(() => {
+    if (!open) return;
+    dialogRef.current?.focus();
+    const onKeyDown = (event: KeyboardEvent) => {
+      if (event.key !== "Escape") return;
+      onOpenChange(false);
+      buttonRef.current?.focus();
+    };
+    const onPointerDown = (event: PointerEvent) => {
+      if (!rootRef.current?.contains(event.target as Node)) onOpenChange(false);
+    };
+    document.addEventListener("keydown", onKeyDown);
+    document.addEventListener("pointerdown", onPointerDown);
+    return () => {
+      document.removeEventListener("keydown", onKeyDown);
+      document.removeEventListener("pointerdown", onPointerDown);
+    };
+  }, [open, onOpenChange]);
+
+  const close = () => {
+    onOpenChange(false);
+    buttonRef.current?.focus();
+  };
+
+  return (
+    <MotionConfig reducedMotion="user">
+      <AnimatePresence>
+        {visible && (
+          <motion.div
+            ref={rootRef}
+            initial={{ opacity: 0, y: 16 }}
+            animate={{ opacity: 1, y: 0 }}
+            exit={{ opacity: 0, y: 16 }}
+            transition={{ duration: 0.2, ease: "easeOut" }}
+            className="pointer-events-none fixed inset-x-4 bottom-4 z-40 flex flex-col items-center gap-3 md:inset-x-auto md:right-6 md:bottom-6 md:items-end"
+          >
+            <AnimatePresence>
+              {open && (
+                <motion.div
+                  ref={dialogRef}
+                  id={dialogId}
+                  role="dialog"
+                  aria-labelledby={titleId}
+                  tabIndex={-1}
+                  initial={{ opacity: 0, y: 8, scale: 0.98 }}
+                  animate={{ opacity: 1, y: 0, scale: 1 }}
+                  exit={{ opacity: 0, y: 8, scale: 0.98 }}
+                  transition={{ duration: 0.18, ease: "easeOut" }}
+                  className="pointer-events-auto flex max-h-[min(36rem,calc(100dvh-10rem))] w-full origin-bottom flex-col rounded-panel bg-surface shadow-[0_20px_50px_rgba(0,14,53,0.22)] outline-none md:w-[23rem] md:origin-bottom-right"
+                >
+                  <div className="flex items-center justify-between gap-4 px-5 pb-1 pt-4">
+                    <h2 id={titleId} className="text-label text-heading">
+                      Filters
+                    </h2>
+                    <button
+                      type="button"
+                      onClick={close}
+                      aria-label="Filters sluiten"
+                      className="-mr-2 flex h-9 w-9 items-center justify-center rounded-pill text-heading transition-colors hover:bg-page focus-visible:outline-2 focus-visible:outline-blue"
+                    >
+                      <X aria-hidden size={18} strokeWidth={2} />
+                    </button>
+                  </div>
+                  <div data-lenis-prevent className="flex flex-col gap-4 overflow-y-auto overscroll-contain px-5 py-3">
+                    {children}
+                  </div>
+                  <div className="flex items-center justify-between gap-4 border-t border-ink/10 px-5 py-3">
+                    <p className="whitespace-nowrap text-meta text-on-light-muted">{summary}</p>
+                    <button
+                      type="button"
+                      onClick={onReset}
+                      tabIndex={isFiltered ? 0 : -1}
+                      aria-hidden={!isFiltered}
+                      className={`shrink-0 rounded-pill px-2 py-1 text-meta font-semibold text-blue transition-colors hover:text-blue-hover focus-visible:outline-2 focus-visible:outline-blue ${
+                        isFiltered ? "" : "invisible"
+                      }`}
+                    >
+                      Filters wissen
+                    </button>
+                  </div>
+                </motion.div>
+              )}
+            </AnimatePresence>
+
+            <button
+              ref={buttonRef}
+              type="button"
+              onClick={() => onOpenChange(!open)}
+              aria-expanded={open}
+              aria-controls={open ? dialogId : undefined}
+              className="pointer-events-auto inline-flex h-12 items-center gap-2 rounded-pill bg-surface-dark pl-4 pr-5 text-label text-on-dark shadow-[0_12px_30px_rgba(0,14,53,0.28)] transition-colors hover:bg-navy-hover focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-blue"
+            >
+              <SlidersHorizontal aria-hidden size={18} strokeWidth={2} />
+              Filters
+              {activeCount > 0 && (
+                <span className="flex h-6 min-w-6 items-center justify-center rounded-pill bg-accent px-1.5 text-meta font-semibold text-navy tabular-nums">
+                  {activeCount}
+                  <span className="sr-only"> actief</span>
+                </span>
+              )}
+            </button>
+          </motion.div>
+        )}
+      </AnimatePresence>
+    </MotionConfig>
   );
 }
 
@@ -448,18 +704,20 @@ function Field({
 function Segmented<T extends string>({
   label,
   layoutId,
+  compact = false,
   value,
   options,
   onChange,
 }: {
   label: string;
   layoutId: string;
+  compact?: boolean;
   value: T;
   options: { value: T; label: string }[];
   onChange: (value: T) => void;
 }) {
   return (
-    <div role="group" aria-label={label} className="flex h-12 rounded-pill bg-page p-1">
+    <div role="group" aria-label={label} className={`flex ${compact ? "h-11" : "h-12"} rounded-pill bg-page p-1`}>
       {options.map((option) => {
         const active = option.value === value;
         return (
@@ -468,7 +726,9 @@ function Segmented<T extends string>({
             type="button"
             aria-pressed={active}
             onClick={() => onChange(option.value)}
-            className={`relative min-w-0 flex-1 rounded-pill px-2 text-meta font-semibold whitespace-nowrap min-[400px]:px-3 min-[400px]:text-label sm:px-5 transition-colors focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-blue ${
+            className={`relative min-w-0 flex-1 rounded-pill px-2 text-meta font-semibold whitespace-nowrap min-[400px]:text-label ${
+              compact ? "" : "min-[400px]:px-3 sm:px-5"
+            } transition-colors focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-blue ${
               active ? "text-on-dark" : "text-foreground hover:text-blue"
             }`}
           >
@@ -489,11 +749,13 @@ function Segmented<T extends string>({
 
 function Select({
   id,
+  height = "h-12",
   value,
   onChange,
   children,
 }: {
   id: string;
+  height?: string;
   value: string;
   onChange: (value: string) => void;
   children: React.ReactNode;
@@ -504,7 +766,7 @@ function Select({
         id={id}
         value={value}
         onChange={(event) => onChange(event.target.value)}
-        className="h-12 w-full cursor-pointer appearance-none rounded-pill bg-page pl-5 pr-12 text-body text-foreground focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-blue"
+        className={`${height} w-full cursor-pointer appearance-none rounded-pill bg-page pl-5 pr-12 text-body text-foreground focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-blue`}
       >
         {children}
       </select>

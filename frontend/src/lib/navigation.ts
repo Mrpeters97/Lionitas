@@ -50,16 +50,14 @@ export const FALLBACK_NAVIGATION: NavItem[] = [
     item("Frame running", "/trainingen/frame-running", "Hardlopen met een loopframe"),
     item("Clinics", "/trainingen/clinics", "Losse clinics en workshops"),
     item("Trainingsrooster", "/trainingen/trainingsrooster", "Alle trainingstijden op een rij"),
-  ]),
-  item("Lid worden", "/lid-worden", "Word lid van Lionitas, of kom eerst vrijblijvend een keer meetrainen.", [
-    item("Informatie & Tarieven", "/lid-worden/informatie-en-tarieven", "Contributie, inschrijven en wat je kunt verwachten"),
-    item("Proeftraining", "/lid-worden/proeftraining", "Kom vrijblijvend een keer meetrainen"),
+    item("Informatie & Tarieven", "/trainingen/informatie-en-tarieven", "Contributie, inschrijven en wat je kunt verwachten"),
+    item("Proeftraining", "/trainingen/proeftraining", "Kom vrijblijvend een keer meetrainen"),
   ]),
   item("Contact", "/contact", "Vragen? Neem contact op met de club."),
 ];
 
-/** Primaire CTA in de header — "Lid worden" staat al als menu-item, dus de pill stuurt naar de laagdrempeligste stap. */
-export const HEADER_CTA = { label: "Proeftraining", href: "/lid-worden/proeftraining" };
+/** Primaire CTA in de header: direct naar het aanmeldformulier (staat daarom niet nog eens in het menu). */
+export const HEADER_CTA = { label: "Lid worden", href: "/lid-worden" };
 
 export function isActivePath(pathname: string, href: string | null) {
   if (!href || href === "/") return pathname === href;

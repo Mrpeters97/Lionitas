@@ -120,7 +120,7 @@ export function StepCategorie({
 
       <Note tone="outline">
         Twijfel je nog? Kom eerst{" "}
-        <Link href="/lid-worden/proeftraining" className={LINK}>
+        <Link href="/trainingen/proeftraining" className={LINK}>
           vrijblijvend meetrainen
         </Link>
         . Je kunt je daarna altijd nog aanmelden.
@@ -323,7 +323,7 @@ export function StepLidmaatschap({ form, today }: StepProps) {
         )}
         <p className="text-meta text-on-light-muted">
           Alle tarieven vind je bij{" "}
-          <Link href="/lid-worden/informatie-en-tarieven" target="_blank" className={LINK}>
+          <Link href="/trainingen/informatie-en-tarieven" target="_blank" className={LINK}>
             Informatie & Tarieven
           </Link>
           .

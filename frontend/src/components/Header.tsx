@@ -4,7 +4,7 @@ import { useEffect, useRef, useState } from "react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { AnimatePresence, MotionConfig, motion } from "framer-motion";
-import { ArrowRight, ArrowUpRight, ChevronDown, ChevronLeft, ChevronRight, Menu, X } from "lucide-react";
+import { ArrowUpRight, ChevronDown, ChevronLeft, ChevronRight, Menu, X } from "lucide-react";
 import PillLink from "@/components/PillLink";
 import MegaMenu, { ACTIVE_LINK, MORPH, MorphPanel, NavAnchor } from "@/components/MegaMenu";
 import { HEADER_CTA, isItemActive, type NavItem } from "@/lib/navigation";
@@ -510,12 +510,10 @@ function MobileSection({
         link={section}
         active={pathname === section.href}
         onNavigate={onNavigate}
-        className="mt-2 flex items-center gap-2 rounded-sm text-on-dark focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-yellow"
+        className="mt-2 block rounded-sm text-on-dark focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-yellow"
       >
         <span className="h4 text-current">{section.label}</span>
-        {section.href && <ArrowRight aria-hidden size={20} strokeWidth={2.25} className="shrink-0 text-yellow" />}
       </NavAnchor>
-      {section.description && <p className="mt-2 text-meta text-on-dark">{section.description}</p>}
       <ul className="mt-3 flex flex-col">
         {section.children.map((child) => {
           const active = pathname === child.href;

@@ -55,6 +55,40 @@ export function ArrowIcon({
   );
 }
 
+const pillClasses = (variant: keyof typeof PILL_STYLES, className: string) =>
+  `group inline-flex items-center gap-2.5 rounded-pill py-2.5 pl-5 pr-2.5 text-label transition-colors duration-500 ease-[cubic-bezier(0.16,1,0.3,1)] focus-visible:outline-2 focus-visible:outline-offset-2 ${PILL_STYLES[variant]} ${className}`;
+
+/** Dezelfde pill als `PillLink`, maar als `<button>` (formulieren). `icon` vervangt de pijl, bv. een spinner. */
+export function PillButton({
+  children,
+  variant = "blue",
+  type = "button",
+  disabled = false,
+  icon,
+  className = "",
+  onClick,
+}: {
+  children: React.ReactNode;
+  variant?: keyof typeof PILL_STYLES;
+  type?: "button" | "submit";
+  disabled?: boolean;
+  icon?: React.ReactNode;
+  className?: string;
+  onClick?: () => void;
+}) {
+  return (
+    <button
+      type={type}
+      disabled={disabled}
+      onClick={onClick}
+      className={pillClasses(variant, `disabled:cursor-wait disabled:opacity-70 ${className}`)}
+    >
+      <span className="whitespace-nowrap">{children}</span>
+      {icon ?? <ArrowIcon variant={variant} />}
+    </button>
+  );
+}
+
 export default function PillLink({
   href,
   target,
@@ -63,8 +97,8 @@ export default function PillLink({
   className = "",
   onClick,
 }: PillLinkProps) {
-  const isExternal = /^https?:\/\//.test(href);
-  const classes = `group inline-flex items-center gap-2.5 rounded-pill py-2.5 pl-5 pr-2.5 text-label transition-colors duration-500 ease-[cubic-bezier(0.16,1,0.3,1)] focus-visible:outline-2 focus-visible:outline-offset-2 ${PILL_STYLES[variant]} ${className}`;
+  const isExternal = /^(https?:\/\/|mailto:|tel:)/.test(href);
+  const classes = pillClasses(variant, className);
 
   const content = (
     <>

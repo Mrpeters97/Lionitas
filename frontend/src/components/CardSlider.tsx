@@ -117,11 +117,11 @@ export default function CardSlider({
               onClick={() => goTo(i)}
               aria-label={`Ga naar kaart ${i + 1} van ${items.length}`}
               aria-current={i === active}
-              className="flex h-8 items-center justify-center px-1.5"
+              className="flex h-8 min-w-6 items-center justify-center px-2"
             >
               <span
                 className={`h-2 rounded-full bg-heading transition-all duration-300 ${
-                  i === active ? "w-6 opacity-100" : "w-2 opacity-25"
+                  i === active ? "w-6 opacity-100" : "w-2 opacity-50" /* ≥ 3:1 op cream (WCAG 1.4.11) */
                 }`}
               />
             </button>

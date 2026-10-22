@@ -28,6 +28,7 @@
   --color-cream: #faf0e0;
   --color-ink: #101010;
   --color-page: #f6f6f6;
+  --color-red: #c42b1c; /* ≥ 5:1 op wit en page */
 
   /* ---- Laag 2: semantische kleuren ---- */
   --color-background: var(--color-page); /* basis pagina-achtergrond (= body) */
@@ -38,9 +39,11 @@
   --color-surface-soft: var(--color-cream); /* cream secties (Trainingen → Actueel) */
   --color-accent: var(--color-yellow); /* primaire knoppen, pijl-glyph */
   --color-heading: var(--color-navy); /* koppen op lichte achtergrond */
+  --color-heading-soft: rgba(0, 14, 53, 0.5); /* gedimde tweede kopregel (PageHero) — 3.5:1 op page: alléén voor grote tekst (≥ 24px of ≥ 18.66px vet) */
   --color-on-dark: #ffffff; /* tekst op donkere surfaces */
   --color-on-dark-muted: rgba(255, 255, 255, 0.75); /* gedimde tekst op donker */
   --color-on-light-muted: rgba(16, 16, 16, 0.65); /* gedimde tekst op licht */
+  --color-danger: var(--color-red); /* foutmeldingen + rand van ongeldige formuliervelden */
 
   /* ---- Type-scale (responsief via clamp: mobiel → desktop) ---- */
   --text-display: clamp(2.25rem, 4vw + 1rem, 3.25rem); /* 36 → 52 */
@@ -71,7 +74,9 @@
   --text-faq--line-height: 1.4;
   --text-faq--font-weight: 600;
 
-  --text-eyebrow: 1.125rem; /* 18 */
+  /* 19px i.p.v. Figma 18: vanaf 18.66px vet telt het als "grote tekst" (WCAG) en is 3:1
+     genoeg — geel op blauw (4.3:1) haalt de 4.5:1 voor normale tekst niet. */
+  --text-eyebrow: 1.1875rem; /* 19 */
   --text-eyebrow--line-height: 1.5;
   --text-eyebrow--font-weight: 700;
 
@@ -105,6 +110,7 @@
   --spacing-bleed: 15rem; /* 240 — Actueel-kaarten */
   --spacing-bleed-cards: 8rem; /* 128 — intro-kaarten die op de cream-sectie vallen */
   --spacing-bleed-hero: 16rem; /* 256 — hero-foto die doorloopt in de brand-sectie */
+  --spacing-bleed-filter: clamp(4rem, 7vw, 6rem); /* 64 → 96 — clubrecords-filterpaneel dat in de blauwe PageHero valt */
 }
 
 /*
@@ -131,6 +137,12 @@
   .eyebrow {
     @apply font-bold italic uppercase text-eyebrow text-accent;
   }
+}
+
+/* WCAG 2.4.11 (focus niet verborgen): bij tabben scrolt de browser het gefocuste
+   element tot onder de vaste header (top-4 + ~84px balk) i.p.v. erachter. */
+html {
+  scroll-padding-top: 8rem;
 }
 
 body {

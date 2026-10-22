@@ -70,7 +70,8 @@ export default async function Home() {
             </h1>
           </ScrollReveal>
           <ScrollReveal trigger="mount" duration={0.9} delay={0.15}>
-            <p className="mt-6 max-w-2xl text-body text-on-dark-muted">{hero.text}</p>
+            {/* text-on-dark i.p.v. -muted: wit 75% haalt op blauw maar 3.6:1 (WCAG vraagt 4.5:1). */}
+            <p className="mt-6 max-w-2xl text-body text-on-dark">{hero.text}</p>
           </ScrollReveal>
           <ScrollReveal trigger="mount" duration={0.9} delay={0.3}>
             <div className="mt-8 flex flex-wrap justify-center gap-4">

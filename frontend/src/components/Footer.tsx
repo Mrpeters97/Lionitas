@@ -27,7 +27,7 @@ const SNEL_NAAR = [
   { label: "Over Lionitas", href: "/over-lionitas" },
   { label: "Actueel", href: "/actueel" },
   { label: "Club klassement", href: "/club-klassement" },
-  { label: "Vrijwilligers", href: "/vrijwilligers" },
+  { label: "Vrijwilligers", href: "/over-lionitas/vrijwilligers" },
   { label: "Contact", href: "/contact" },
 ];
 
@@ -60,7 +60,7 @@ function SocialIcon({ href, label, path }: { href: string; label: string; path: 
       target="_blank"
       rel="noreferrer"
       aria-label={label}
-      className="text-accent transition hover:opacity-70 focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-accent"
+      className="text-accent transition-colors hover:text-on-dark focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-accent"
     >
       <svg width="22" height="22" viewBox="0 0 24 24" fill="currentColor" aria-hidden>
         <path d={path} />
@@ -85,7 +85,7 @@ function CreditsRow({
       <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:gap-8">
         <div className="flex flex-wrap gap-x-8 gap-y-2 sm:justify-end">
           {LEGAL.map((link) => (
-            <Link key={link.href} href={link.href} className="underline underline-offset-4 hover:text-accent">
+            <Link key={link.href} href={link.href} className="underline underline-offset-4 hover:decoration-accent hover:decoration-2">
               {link.label}
             </Link>
           ))}
@@ -160,15 +160,22 @@ export default async function Footer() {
                   href={`https://maps.google.com/?q=${encodeURIComponent(settings.contact.address)}`}
                   target="_blank"
                   rel="noreferrer"
-                  className="underline underline-offset-4 hover:text-accent"
+                  className="underline underline-offset-4 hover:decoration-accent hover:decoration-2"
                 >
                   {settings.contact.address}
                 </a>
-                <span className="flex flex-col gap-1 text-accent">
-                  <a href={`mailto:${settings.contact.email}`} className="hover:underline">
+                {/* Wit + onderstreept i.p.v. geel: gele lopende tekst haalt op blauw maar 4.3:1. */}
+                <span className="flex flex-col gap-1">
+                  <a
+                    href={`mailto:${settings.contact.email}`}
+                    className="underline underline-offset-4 hover:decoration-accent hover:decoration-2"
+                  >
                     {settings.contact.email}
                   </a>
-                  <a href={`tel:${settings.contact.phone.replace(/\s/g, "")}`} className="hover:underline">
+                  <a
+                    href={`tel:${settings.contact.phone.replace(/\s/g, "")}`}
+                    className="underline underline-offset-4 hover:decoration-accent hover:decoration-2"
+                  >
                     {settings.contact.phone}
                   </a>
                 </span>
@@ -180,7 +187,7 @@ export default async function Footer() {
               <ul className="mt-4 flex flex-col gap-3 text-body">
                 {SNEL_NAAR.map((link) => (
                   <li key={link.href}>
-                    <Link href={link.href} className="hover:text-accent">
+                    <Link href={link.href} className="underline-offset-4 hover:underline hover:decoration-accent hover:decoration-2">
                       {link.label}
                     </Link>
                   </li>
@@ -193,7 +200,7 @@ export default async function Footer() {
               <ul className="mt-4 flex flex-col gap-3 text-body">
                 {TRAININGEN.map((link) => (
                   <li key={link.href}>
-                    <Link href={link.href} className="hover:text-accent">
+                    <Link href={link.href} className="underline-offset-4 hover:underline hover:decoration-accent hover:decoration-2">
                       {link.label}
                     </Link>
                   </li>

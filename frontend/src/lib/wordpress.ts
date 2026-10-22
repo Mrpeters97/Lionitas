@@ -1,4 +1,6 @@
+import { cache } from "react";
 import { GraphQLClient } from "graphql-request";
+import { FALLBACK_NAVIGATION, type NavItem } from "@/lib/navigation";
 
 const WORDPRESS_API_URL = process.env.NEXT_PUBLIC_WORDPRESS_API_URL as string;
 
@@ -211,6 +213,79 @@ export async function getHomeContent(): Promise<HomeContent> {
   const data = await fetchGraphQL<{ page: { homeContent: HomeContent } }>(query);
   return data.page.homeContent;
 }
+
+interface RawMenuItem {
+  id: string;
+  parentId: string | null;
+  label: string;
+  url: string | null;
+  description: string | null;
+  target: string | null;
+}
+
+// WordPress geeft absolute URL's terug (https://lionitas.instawp.site/over-lionitas/).
+// Interne links → relatief pad zonder trailing slash; "#" of leeg → niet klikbaar;
+// ander domein of "nieuw tabblad" → extern.
+function toNavHref(url: string | null, target: string | null): Pick<NavItem, "href" | "external"> {
+  if (!url || url.startsWith("#")) return { href: null, external: false };
+  if (url.startsWith("/")) return { href: url.replace(/(.)\/$/, "$1"), external: false };
+  try {
+    const parsed = new URL(url);
+    if (parsed.origin === new URL(WORDPRESS_API_URL).origin && target !== "_blank") {
+      return { href: parsed.pathname.replace(/(.)\/$/, "$1"), external: false };
+    }
+  } catch {
+    return { href: null, external: false };
+  }
+  return { href: url, external: true };
+}
+
+/**
+ * Hoofdmenu uit WordPress (Weergave → Menu's, locatie "Primary"), als boom.
+ * Valt terug op `FALLBACK_NAVIGATION` als er geen menu hangt of WordPress faalt.
+ * Tijdelijk: `NAVIGATION_SOURCE=code` slaat WordPress over en toont altijd het menu
+ * uit de code (demo voor het bestuur). Weghalen zodra het menu in WordPress staat.
+ * `cache`: layout (header) en catch-all route delen zo één request per render.
+ */
+export const getNavigation = cache(async (): Promise<NavItem[]> => {
+  if (process.env.NAVIGATION_SOURCE === "code") return FALLBACK_NAVIGATION;
+
+  const query = /* GraphQL */ `
+    query GetMainMenu {
+      menuItems(where: { location: PRIMARY }, first: 100) {
+        nodes {
+          id
+          parentId
+          label
+          url
+          description
+          target
+        }
+      }
+    }
+  `;
+
+  try {
+    const data = await fetchGraphQL<{ menuItems: { nodes: RawMenuItem[] } | null }>(query);
+    const nodes = data.menuItems?.nodes ?? [];
+    if (nodes.length === 0) return FALLBACK_NAVIGATION;
+
+    const build = (parentId: string | null): NavItem[] =>
+      nodes
+        .filter((node) => node.parentId === parentId)
+        .map((node) => ({
+          id: node.id,
+          label: node.label,
+          description: node.description?.trim() || null,
+          ...toNavHref(node.url, node.target),
+          children: build(node.id),
+        }));
+
+    return build(null);
+  } catch {
+    return FALLBACK_NAVIGATION;
+  }
+});
 
 export interface SiteSettings {
   contact: {
